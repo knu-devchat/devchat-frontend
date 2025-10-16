@@ -17,7 +17,7 @@ export default function MainPage() {
             </Link>
             <Link to="/login">
                 <Button>
-                    Login
+                    Login                                  
                 </Button>
             </Link>
         </div>
