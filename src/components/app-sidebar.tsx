@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ArchiveX, Command, File, Inbox, Send, Trash2 } from "lucide-react"
+import { MessageCirclePlus, Command, Contact, MessageCircleCode } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
 import { Label } from "@/components/ui/label"
@@ -23,39 +23,27 @@ import { Switch } from "@/components/ui/switch"
 // This is sample data
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
+    name: "개발자",
+    email: "developer@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
     {
-      title: "Inbox",
+      title: "채팅",
       url: "#",
-      icon: Inbox,
+      icon: MessageCircleCode,
       isActive: true,
     },
     {
-      title: "Drafts",
+      title: "친구",
       url: "#",
-      icon: File,
+      icon: Contact,
       isActive: false,
     },
     {
-      title: "Sent",
+      title: "방 생성",
       url: "#",
-      icon: Send,
-      isActive: false,
-    },
-    {
-      title: "Junk",
-      url: "#",
-      icon: ArchiveX,
-      isActive: false,
-    },
-    {
-      title: "Trash",
-      url: "#",
-      icon: Trash2,
+      icon: MessageCirclePlus,
       isActive: false,
     },
   ],
