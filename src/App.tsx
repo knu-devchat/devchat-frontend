@@ -2,7 +2,7 @@ import './App.css'
 import LoginPage from './components/pages/LoginPage';
 import MainPage from './components/pages/MainPage';
 import Dashboard from './components/pages/Dashboard';
-import {Routes, Route, Link} from 'react-router-dom';
+import {Routes, Route} from 'react-router-dom';
 
 function App() {
 
