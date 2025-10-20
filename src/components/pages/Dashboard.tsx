@@ -14,6 +14,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
+import { Textarea } from "@/components/ui/textarea"
+
 export default function Dashboard() {
   return (
     <SidebarProvider
@@ -33,23 +35,14 @@ export default function Dashboard() {
           />
           <Breadcrumb>
             <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">All Inboxes</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Inbox</BreadcrumbPage>
+                <BreadcrumbPage>방 이름</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          {Array.from({ length: 24 }).map((_, index) => (
-            <div
-              key={index}
-              className="bg-muted/50 aspect-video h-12 w-full rounded-lg"
-            />
-          ))}
+        <div className="flex h-full flex-col">
+          <Textarea placeholder="Type your message here." className="mt-auto mb-2" />
         </div>
       </SidebarInset>
     </SidebarProvider>
