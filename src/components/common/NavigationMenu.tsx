@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Link } from "react-router-dom"
-import { CircleCheckIcon, CircleHelpIcon, CircleIcon } from "lucide-react"
+import { CircleHelpIcon } from "lucide-react"
 
 import {
   NavigationMenu,
@@ -11,44 +11,20 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 
 const components: { title: string; href: string; description: string }[] = [
   {
-    title: "Alert Dialog",
-    href: "/docs/primitives/alert-dialog",
+    title: "GitHub Issues",
+    href: "https://github.com/knu-devchat/devchat-frontend/issues",
     description:
-      "A modal dialog that interrupts the user with important content and expects a response.",
+      "사용 중 문제가 발생한다면 이슈를 등록해주세요. 빠르게 대응하겠습니다.",
   },
   {
-    title: "Hover Card",
-    href: "/docs/primitives/hover-card",
+    title: "Mail",
+    href: "mailto:jeontaehyun0203@gmail.com",
     description:
-      "For sighted users to preview content available behind a link.",
-  },
-  {
-    title: "Progress",
-    href: "/docs/primitives/progress",
-    description:
-      "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
-  },
-  {
-    title: "Scroll-area",
-    href: "/docs/primitives/scroll-area",
-    description: "Visually or semantically separates content.",
-  },
-  {
-    title: "Tabs",
-    href: "/docs/primitives/tabs",
-    description:
-      "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-  },
-  {
-    title: "Tooltip",
-    href: "/docs/primitives/tooltip",
-    description:
-      "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
+      "문의 사항이 있으시면 언제든지 이메일을 보내주세요.",
   },
 ]
 
@@ -57,7 +33,7 @@ export function NavigationMenuDemo() {
     <NavigationMenu viewport={false}>
       <NavigationMenuList>
         <NavigationMenuItem>
-          <NavigationMenuTrigger>Home</NavigationMenuTrigger>
+          <NavigationMenuTrigger>프로그램 소개</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid gap-2 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
               <li className="row-span-3">
@@ -67,28 +43,25 @@ export function NavigationMenuDemo() {
                     href="/"
                   >
                     <div className="mt-4 mb-2 text-lg font-medium">
-                      shadcn/ui
+                      DevChat
                     </div>
                     <p className="text-muted-foreground text-sm leading-tight">
-                      Beautifully designed components built with Tailwind CSS.
+                      상대방과 함께 사용할 수 있는 AI를 탑재한 협업 메신저.
                     </p>
                   </a>
                 </NavigationMenuLink>
               </li>
-              <ListItem href="/docs" title="Introduction">
-                Re-usable components built using Radix UI and Tailwind CSS.
+              <ListItem title="Introduction">
+                함께 사용할 수 있는 AI가 탑재되어 있는 협업 메신저.
               </ListItem>
-              <ListItem href="/docs/installation" title="Installation">
-                How to install dependencies and structure your app.
-              </ListItem>
-              <ListItem href="/docs/primitives/typography" title="Typography">
-                Styles for headings, paragraphs, lists...etc
+              <ListItem title="why?">
+                상대방의 AI가 작성한 코드를 나의 AI에게 다시 입력하는 불편함을 해소합니다.
               </ListItem>
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <NavigationMenuTrigger>Components</NavigationMenuTrigger>
+          <NavigationMenuTrigger>고객센터</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid w-[400px] gap-2 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
               {components.map((component) => (
@@ -104,45 +77,6 @@ export function NavigationMenuDemo() {
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link to="/docs">Docs</Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>List</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[300px] gap-4">
-              <li>
-                <NavigationMenuLink asChild>
-                  <Link to="#">
-                    <div className="font-medium">Components</div>
-                    <div className="text-muted-foreground">
-                      Browse all components in the library.
-                    </div>
-                  </Link>
-                </NavigationMenuLink>
-                <NavigationMenuLink asChild>
-                  <Link to="#">
-                    <div className="font-medium">Documentation</div>
-                    <div className="text-muted-foreground">
-                      Learn how to use the library.
-                    </div>
-                  </Link>
-                </NavigationMenuLink>
-                <NavigationMenuLink asChild>
-                  <Link to="#">
-                    <div className="font-medium">Blog</div>
-                    <div className="text-muted-foreground">
-                      Read our latest blog posts.
-                    </div>
-                  </Link>
-                </NavigationMenuLink>
-              </li>
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>Simple</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid w-[200px] gap-4">
               <li>
@@ -160,26 +94,26 @@ export function NavigationMenuDemo() {
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <NavigationMenuTrigger>With Icon</NavigationMenuTrigger>
+          <NavigationMenuTrigger>자주 묻는 질문</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid w-[200px] gap-4">
               <li>
                 <NavigationMenuLink asChild>
                   <Link to="#" className="flex-row items-center gap-2">
                     <CircleHelpIcon />
-                    Backlog
+                    자주 묻는 질문 1
                   </Link>
                 </NavigationMenuLink>
                 <NavigationMenuLink asChild>
                   <Link to="#" className="flex-row items-center gap-2">
-                    <CircleIcon />
-                    To Do
+                    <CircleHelpIcon />
+                    자주 묻는 질문 2
                   </Link>
                 </NavigationMenuLink>
                 <NavigationMenuLink asChild>
                   <Link to="#" className="flex-row items-center gap-2">
-                    <CircleCheckIcon />
-                    Done
+                    <CircleHelpIcon />
+                    자주 묻는 질문 3
                   </Link>
                 </NavigationMenuLink>
               </li>
@@ -196,16 +130,38 @@ function ListItem({
   children,
   href,
   ...props
-}: React.ComponentPropsWithoutRef<"li"> & { href: string }) {
+}: React.ComponentPropsWithoutRef<"li"> & { href?: string }) {
+  const content = (
+    <div className="text-sm font-medium leading-none">{title}</div>
+  )
+
+  const description = (
+    <p className="text-muted-foreground line-clamp-2 text-sm leading-snug">
+      {children}
+    </p>
+  )
+
   return (
     <li {...props}>
       <NavigationMenuLink asChild>
-        <Link to={href}>
-          <div className="text-sm leading-none font-medium">{title}</div>
-          <p className="text-muted-foreground line-clamp-2 text-sm leading-snug">
-            {children}
-          </p>
-        </Link>
+        {href ? (
+          <Link
+            to={href}
+            className="block rounded-md p-3 transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            {content}
+            {description}
+          </Link>
+        ) : (
+          <div
+            className="block rounded-md p-3 transition-colors hover:bg-accent hover:text-accent-foreground cursor-default"
+            role="button"
+            tabIndex={0}
+          >
+            {content}
+            {description}
+          </div>
+        )}
       </NavigationMenuLink>
     </li>
   )

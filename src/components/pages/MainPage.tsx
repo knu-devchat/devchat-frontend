@@ -22,7 +22,7 @@ export default function MainPage() {
             </Link>
         </div>
         <h1 className="flex justify-center text-center text-6xl font-bold leading-relaxed mt-40">
-            협업과 AI의 모든 것<br />DevChat에서 쉽고 간편하게
+            AI를 공유하는 협업<br />DevChat에서 쉽고 간편하게
         </h1>
     </div>
   );
