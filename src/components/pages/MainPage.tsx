@@ -2,6 +2,7 @@ import { NavigationMenuDemo } from "../common/NavigationMenu";
 import { Button } from "../ui/button";
 import { Link } from "react-router-dom";
 
+
 export default function MainPage() {
 
   return (

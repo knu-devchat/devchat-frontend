@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar"
 
 import { Textarea } from "@/components/ui/textarea"
+import { AIChat } from "../common/AIChat";
 
 export default function Dashboard() {
   return (
@@ -38,6 +39,7 @@ export default function Dashboard() {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+          <AIChat className={"ml-auto"} />
         </header>
         <div className="flex h-full flex-col">
           <Textarea placeholder="Type your message here." className="mt-auto mb-2" />
