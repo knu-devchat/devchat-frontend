@@ -1,9 +1,14 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { MessageCirclePlus, Command, Contact, MessageCircleCode } from "lucide-react"
+import * as React from "react";
+import {
+  MessageCirclePlus,
+  Command,
+  Contact,
+  MessageCircleCode,
+} from "lucide-react";
 
-import { NavUser } from "@/components/nav-user"
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -16,7 +21,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+
+import { CreateRoom } from "@/components/createRoom";
+import {
+  Dialog,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 import Logo from "@/assets/logo.svg";
 
@@ -64,14 +75,14 @@ const data = {
       date: "05:34 AM",
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // Note: I'm using state to show active item.
   // IRL you should use the url/router.
-  const [activeItem, setActiveItem] = React.useState(data.navMain[0])
-  const [rooms, setRooms] = React.useState(data.rooms)
-  const { setOpen } = useSidebar()
+  const [activeItem, setActiveItem] = React.useState(data.navMain[0]);
+  const [rooms, setRooms] = React.useState(data.rooms);
+  const { setOpen } = useSidebar();
 
   return (
     <Sidebar
@@ -109,28 +120,43 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenu>
                 {data.navMain.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      tooltip={{
-                        children: item.title,
-                        hidden: false,
-                      }}
-                      onClick={() => {
-                        setActiveItem(item)
-                        const room = data.rooms.sort(() => Math.random() - 0.5)
-                        setRooms(
-                          room.slice(
-                            0,
-                            Math.max(5, Math.floor(Math.random() * 10) + 1)
-                          )
-                        )
-                        setOpen(true)
-                      }}
-                      isActive={activeItem?.title === item.title}
-                      className="px-2.5 md:px-2"
-                    >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
+                    {/* 💡 "방 생성" 항목만 Dialog로 감쌉니다. */}
+                    {item.title === "방 생성" ? (
+                      <Dialog>
+                        {/* 1. 버튼을 DialogTrigger로 사용 */}
+                        <DialogTrigger asChild>
+                          <SidebarMenuButton
+                            tooltip={{
+                              children: item.title,
+                              hidden: false,
+                            }}
+                            // ⚠️ onClick 핸들러 제거 (DialogTrigger가 자동으로 처리)
+                            isActive={activeItem?.title === item.title}
+                            className="px-2.5 md:px-2"
+                          >
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </SidebarMenuButton>
+                        </DialogTrigger>
+
+                        {/* 2. 다이얼로그 내용은 createRoom 컴포넌트 */}
+                        <CreateRoom />
+                      </Dialog>
+                    ) : (
+                      <SidebarMenuButton
+                        tooltip={{
+                          children: item.title,
+                          hidden: false,
+                        }}
+                        // 일반 항목은 onClick을 유지하거나 라우팅 처리
+                        onClick={() => setActiveItem(item)}
+                        isActive={activeItem?.title === item.title}
+                        className="px-2.5 md:px-2"
+                      >
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </SidebarMenuButton>
+                    )}
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -174,5 +200,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarContent>
       </Sidebar>
     </Sidebar>
-  )
+  );
 }
