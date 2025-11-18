@@ -12,8 +12,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
-import { Textarea } from "@/components/ui/textarea"
 import { AIChat } from "../common/AIChat";
+import { Chat } from "@/components/common/Chat";
 
 export default function Dashboard() {
   return (
@@ -41,8 +41,10 @@ export default function Dashboard() {
           </Breadcrumb>
           <AIChat className={"ml-auto"} />
         </header>
-        <div className="flex h-full flex-col">
-          <Textarea placeholder="Type your message here." className="mt-auto mb-2" />
+        <div className="flex flex-col p-4 h-[calc(100vh-64px)]">
+          <div className="flex-1 min-h-0">
+            <Chat />
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
