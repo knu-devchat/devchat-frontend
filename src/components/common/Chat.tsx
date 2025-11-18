@@ -15,7 +15,7 @@ export function Chat() {
   const listRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  const wsUrl = (import.meta as unknown as { env?: { VITE_WS_URL?: string } }).env?.VITE_WS_URL || "ws://localhost:4000";
+  const wsUrl = (import.meta as unknown as { env?: { VITE_WS_URL?: string; }; }).env?.VITE_WS_URL || "ws://localhost:4000";
 
   useEffect(() => {
     let mounted = true;
@@ -75,7 +75,7 @@ export function Chat() {
         el.scrollTop = max >= 0 ? max : 0;
         el.scrollTo?.({ top: el.scrollHeight, behavior: "auto" });
         try {
-          const dev = (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV;
+          const dev = (import.meta as unknown as { env?: { DEV?: boolean; }; }).env?.DEV;
           if (dev) {
             console.debug("chat scroll", { scrollHeight: el.scrollHeight, clientHeight: el.clientHeight, max, bottomExists: !!bottomRef.current });
           }
@@ -134,9 +134,8 @@ export function Chat() {
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`max-w-[80%] wrap-break-word px-3 py-2 rounded-lg ${
-              m.from === "me" ? "ml-auto bg-primary/10" : m.from === "remote" ? "mr-auto bg-muted/20" : "text-sm text-muted text-center"
-            }`}
+            className={`max-w-[80%] wrap-break-word px-3 py-2 rounded-lg ${m.from === "me" ? "ml-auto bg-primary/10" : m.from === "remote" ? "mr-auto bg-muted/20" : "text-sm text-muted text-center"
+              }`}
           >
             {m.text}
           </div>
@@ -147,18 +146,17 @@ export function Chat() {
       <div className="sticky bottom-0 left-0 right-0 z-10 bg-background/80 backdrop-blur-sm py-2">
         <div className="mt-2 flex gap-2 items-end px-4">
           <Textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              send();
-            }
-          }}
-          placeholder="메시지를 입력하세요 (Enter: 전송, Shift+Enter: 줄바꿈)"
-          className="h-24"
-        />
-          <Button onClick={send} className="h-12">전송</Button>
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
+            }}
+            placeholder="메시지를 입력하세요 (Enter: 전송, Shift+Enter: 줄바꿈)"
+            className="h-24"
+          />
         </div>
       </div>
     </div>
