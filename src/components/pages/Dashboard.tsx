@@ -14,8 +14,11 @@ import {
 
 import { AIChat } from "../common/AIChat";
 import { Chat } from "@/components/common/Chat";
+import { useRoom } from "@/hooks/useRoom";
 
 export default function Dashboard() {
+  const { selectedRoom } = useRoom();
+
   return (
     <SidebarProvider
       style={
@@ -35,7 +38,7 @@ export default function Dashboard() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbPage>방 이름</BreadcrumbPage>
+                <BreadcrumbPage>{selectedRoom?.roomName || "방 선택"}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
