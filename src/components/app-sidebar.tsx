@@ -20,16 +20,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
 
 import { CreateRoom } from "@/components/createRoom";
-import {
-  Dialog,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 
 import Logo from "@/assets/logo.svg";
+import { useRoom } from "@/hooks/useRoom";
+import { enterChatRoom } from "@/services/chatService";
 
 // This is sample data
 const data = {
@@ -44,12 +41,6 @@ const data = {
       url: "#",
       icon: MessageCircleCode,
       isActive: true,
-    },
-    {
-      title: "친구",
-      url: "#",
-      icon: Contact,
-      isActive: false,
     },
     {
       title: "방 생성",
@@ -82,7 +73,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // IRL you should use the url/router.
   const [activeItem, setActiveItem] = React.useState(data.navMain[0]);
   const [rooms, setRooms] = React.useState(data.rooms);
-  const { setOpen } = useSidebar();
+  const createRoomRef = React.useRef<{ open: () => void }>(null);
+  const { setSelectedRoom } = useRoom();
+
+  const handleRoomCreated = (newRoom: { roomName: string; subject: string; date: string }) => {
+    setRooms([newRoom, ...rooms]);
+  };
+
+  const handleRoomClick = async (room: { roomName: string; subject: string; date: string }) => {
+    // Context에 선택된 방 저장
+    setSelectedRoom(room);
+    
+    // 서버에 채팅방 입장 요청 (테스트 중)
+    try {
+      const result = await enterChatRoom(room.roomName);
+      console.log('[입장 완료]', result);
+    } catch (error) {
+      console.error('[입장 실패]', error);
+    }
+  };
 
   return (
     <Sidebar
@@ -122,26 +131,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuItem key={item.title}>
                     {/* 💡 "방 생성" 항목만 Dialog로 감쌉니다. */}
                     {item.title === "방 생성" ? (
-                      <Dialog>
-                        {/* 1. 버튼을 DialogTrigger로 사용 */}
-                        <DialogTrigger asChild>
-                          <SidebarMenuButton
-                            tooltip={{
-                              children: item.title,
-                              hidden: false,
-                            }}
-                            // ⚠️ onClick 핸들러 제거 (DialogTrigger가 자동으로 처리)
-                            isActive={activeItem?.title === item.title}
-                            className="px-2.5 md:px-2"
-                          >
-                            <item.icon />
-                            <span>{item.title}</span>
-                          </SidebarMenuButton>
-                        </DialogTrigger>
-
-                        {/* 2. 다이얼로그 내용은 createRoom 컴포넌트 */}
-                        <CreateRoom />
-                      </Dialog>
+                      <div>
+                        <SidebarMenuButton
+                          tooltip={{
+                            children: item.title,
+                            hidden: false,
+                          }}
+                          onClick={() => {
+                            createRoomRef.current?.open();
+                          }}
+                          isActive={activeItem?.title === item.title}
+                          className="px-2.5 md:px-2"
+                        >
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </SidebarMenuButton>
+                        <CreateRoom ref={createRoomRef} onRoomCreated={handleRoomCreated} />
+                      </div>
                     ) : (
                       <SidebarMenuButton
                         tooltip={{
@@ -186,7 +192,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <a
                   href="#"
                   key={room.roomName}
-                  className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleRoomClick(room);
+                  }}
+                  className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0 cursor-pointer"
                 >
                   <div className="flex w-full items-center gap-2">
                     <span>{room.roomName}</span>{" "}

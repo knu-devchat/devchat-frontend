@@ -1,38 +1,72 @@
+import React, { useImperativeHandle, forwardRef } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-export function CreateRoom() {
+export const CreateRoom = forwardRef<{ open: () => void }, { onRoomCreated: (room: { roomName: string; subject: string; date: string }) => void }>(({ onRoomCreated }, ref) => {
+  const [roomName, setRoomName] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+  const closeButtonRef = React.useRef<HTMLButtonElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    open: () => setOpen(true),
+  }));
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (!roomName.trim()) {
+      alert("방 이름을 입력해주세요.");
+      return;
+    }
+
+    const newRoom = {
+      roomName: roomName,
+      subject: "새로운 방",
+      date: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    onRoomCreated(newRoom);
+    setRoomName("");
+    closeButtonRef.current?.click();
+  };
+
   return (
-      <form>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>방 생성</DialogTitle>
-          </DialogHeader>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>방 생성</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
           <div className="grid gap-4">
             <div className="grid gap-3">
               <Label htmlFor="name-1">방 이름</Label>
-              <Input id="name-1" name="name" defaultValue="방 이름을 입력하세요." />
+              <Input 
+                id="name-1" 
+                name="name" 
+                placeholder="방 이름을 입력하세요."
+                value={roomName}
+                onChange={(e) => setRoomName(e.target.value)}
+                autoFocus
+              />
             </div>
-            
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">취소</Button>
+              <Button ref={closeButtonRef} variant="outline">취소</Button>
             </DialogClose>
             <Button type="submit">생성</Button>
           </DialogFooter>
-        </DialogContent>
-      </form>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
-}
+})
