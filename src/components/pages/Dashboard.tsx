@@ -12,12 +12,16 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
+import React from "react";
 import { AIChat } from "../common/AIChat";
 import { Chat } from "@/components/common/Chat";
 import { useRoom } from "@/hooks/useRoom";
+import { TotpDialog } from "../totp-dialog";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const { selectedRoom } = useRoom();
+  const totpRef = React.useRef<{ open: () => void } | null>(null);
 
   return (
     <SidebarProvider
@@ -42,6 +46,10 @@ export default function Dashboard() {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+          <Button variant="ghost" className="mr-2" onClick={() => totpRef.current?.open()}>
+            TOTP
+          </Button>
+          <TotpDialog ref={totpRef} />
           <AIChat className={"ml-auto"} />
         </header>
         <div className="flex flex-col p-4 h-[calc(100vh-64px)]">
