@@ -8,15 +8,29 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 
-export function InputOTPControlled() {
-  const [value, setValue] = React.useState("")
+interface InputOTPControlledProps {
+  value?: string
+  onChange?: (value: string) => void
+}
+
+export function InputOTPControlled({ value = "", onChange }: InputOTPControlledProps) {
+  const [internalValue, setInternalValue] = React.useState("")
+  const currentValue = value !== undefined ? value : internalValue
+  
+  const handleChange = (newValue: string) => {
+    if (onChange) {
+      onChange(newValue)
+    } else {
+      setInternalValue(newValue)
+    }
+  }
 
   return (
     <div className="space-y-2">
       <InputOTP
         maxLength={6}
-        value={value}
-        onChange={(value) => setValue(value)}
+        value={currentValue}
+        onChange={handleChange}
       >
         <InputOTPGroup>
           <InputOTPSlot index={0} />
@@ -28,10 +42,10 @@ export function InputOTPControlled() {
         </InputOTPGroup>
       </InputOTP>
       <div className="text-center text-sm">
-        {value === "" ? (
-          <>Enter your one-time password.</>
+        {currentValue === "" ? (
+          <>OTP를 입력하세요.</>
         ) : (
-          <>You entered: {value}</>
+          <>입력된 OTP: {currentValue}</>
         )}
       </div>
     </div>

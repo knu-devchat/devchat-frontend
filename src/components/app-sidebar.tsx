@@ -3,8 +3,6 @@
 import * as React from "react";
 import {
   MessageCirclePlus,
-  Command,
-  Contact,
   MessageCircleCode,
 } from "lucide-react";
 
@@ -23,10 +21,13 @@ import {
 } from "@/components/ui/sidebar";
 
 import { CreateRoom } from "@/components/createRoom";
+import { JoinRoom } from "@/components/join-room";
 
 import Logo from "@/assets/logo.svg";
 import { useRoom } from "@/hooks/useRoom";
 import { enterChatRoom } from "@/services/chatService";
+
+import { DoorOpen } from 'lucide-react';
 
 // This is sample data
 const data = {
@@ -44,6 +45,12 @@ const data = {
     },
     {
       title: "방 생성",
+      url: "#",
+      icon: MessageCirclePlus,
+      isActive: false,
+    },
+    {
+      title: "방 입장",
       url: "#",
       icon: MessageCirclePlus,
       isActive: false,
@@ -73,7 +80,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // IRL you should use the url/router.
   const [activeItem, setActiveItem] = React.useState(data.navMain[0]);
   const [rooms, setRooms] = React.useState(data.rooms);
-  const createRoomRef = React.useRef<{ open: () => void }>(null);
+  const createRoomRef = React.useRef<{ open: () => void } | null>(null);
+  const joinRoomRef = React.useRef<{ open: () => void } | null>(null);
   const { setSelectedRoom } = useRoom();
 
   const handleRoomCreated = (newRoom: { roomName: string; subject: string; date: string }) => {
@@ -129,7 +137,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenu>
                 {data.navMain.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    {/* 💡 "방 생성" 항목만 Dialog로 감쌉니다. */}
+                    {/* 💡 "방 생성"과 "방 입장" 항목만 Dialog로 감쌉니다. */}
                     {item.title === "방 생성" ? (
                       <div>
                         <SidebarMenuButton
@@ -148,7 +156,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         </SidebarMenuButton>
                         <CreateRoom ref={createRoomRef} onRoomCreated={handleRoomCreated} />
                       </div>
-                    ) : (
+                    ) : item.title === "방 입장" ? (
+                      <div>
+                        <SidebarMenuButton
+                          tooltip={{
+                            children: item.title,
+                            hidden: false,
+                          }}
+                          onClick={() => {
+                            joinRoomRef.current?.open();
+                          }}
+                          isActive={activeItem?.title === item.title}
+                          className="px-2.5 md:px-2"
+                        >
+                          <DoorOpen />
+                          <span>{item.title}</span>
+                        </SidebarMenuButton>
+                        <JoinRoom ref={joinRoomRef} />
+                      </div>
+                    ) : (                   
                       <SidebarMenuButton
                         tooltip={{
                           children: item.title,
@@ -163,6 +189,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <span>{item.title}</span>
                       </SidebarMenuButton>
                     )}
+                    
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>

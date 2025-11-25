@@ -105,3 +105,47 @@ export async function sendChatMessage(roomId: string, message: string) {
     throw error;
   }
 }
+
+// ========================================
+// 📨 OTP로 방 입장 API
+// ========================================
+// 엔드포인트: POST /rooms/join
+// 요청 본문: { otp: string }
+// 설명: OTP 코드로 채팅방에 입장합니다
+export async function joinRoomWithOTP(otp: string) {
+  try {
+    console.log(`[API 테스트] OTP 방 입장 요청 - otp: ${otp}`);
+    
+    // TODO: 아래 코드를 활성화하면 실제 서버로 요청합니다
+    // const response = await fetch(`${API_BASE_URL}/rooms/join`, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     // 'Authorization': `Bearer ${token}` // 필요시 추가
+    //   },
+    //   body: JSON.stringify({ otp }),
+    // });
+    // 
+    // if (!response.ok) {
+    //   throw new Error(`HTTP error! status: ${response.status}`);
+    // }
+    // 
+    // const data = await response.json();
+    // console.log('[API 응답] 방 입장 완료:', data);
+    // return data;
+    
+    // 테스트용 모의 응답
+    return {
+      success: true,
+      message: 'OTP 방 입장 테스트 완료',
+      room: {
+        roomName: `방-${otp}`,
+        subject: 'OTP로 입장한 방',
+        date: new Date().toLocaleTimeString()
+      }
+    };
+  } catch (error) {
+    console.error('[API 에러] OTP 방 입장 실패:', error);
+    throw error;
+  }
+}
