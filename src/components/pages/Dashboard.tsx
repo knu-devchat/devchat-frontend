@@ -19,6 +19,8 @@ import { useRoom } from "@/hooks/useRoom";
 import { TotpDialog } from "../totp-dialog";
 import { Button } from "@/components/ui/button";
 
+import { UserRoundPlus } from 'lucide-react';
+
 export default function Dashboard() {
   const { selectedRoom } = useRoom();
   const totpRef = React.useRef<{ open: () => void } | null>(null);
@@ -47,7 +49,7 @@ export default function Dashboard() {
             </BreadcrumbList>
           </Breadcrumb>
           <Button variant="ghost" className="mr-2" onClick={() => totpRef.current?.open()}>
-            TOTP
+            <UserRoundPlus/>
           </Button>
           <TotpDialog ref={totpRef} />
           <AIChat className={"ml-auto"} />
