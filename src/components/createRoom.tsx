@@ -33,21 +33,24 @@ export const CreateRoom = forwardRef<{ open: () => void; }, { onRoomCreated: (ro
     try {
       const response = await createRoom(roomName);
       console.log("API 생성 방", response);
+
+      const newRoom = {
+        roomName: roomName,
+        subject: "새로운 방",
+        date: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+        id: response.id,
+      };
+
+      onRoomCreated(newRoom);
+      setRoomName("");
+      closeButtonRef.current?.click();
     } catch (error) {
       console.error("방 생성 실패:", error);
       alert("방 생성에 실패했습니다. 다시 시도해주세요.");
       return;
     }
 
-    const newRoom = {
-      roomName: roomName,
-      subject: "새로운 방",
-      date: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-    };
 
-    onRoomCreated(newRoom);
-    setRoomName("");
-    closeButtonRef.current?.click();
   };
 
   return (

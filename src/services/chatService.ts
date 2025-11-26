@@ -2,7 +2,7 @@
 // 🔗 서버 엔드포인트 설정
 // ========================================
 // TODO: 백엔드 API 엔드포인트를 아래에서 설정하세요
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 console.log('[API] API_BASE_URL:', API_BASE_URL);
 
@@ -15,7 +15,7 @@ console.log('[API] API_BASE_URL:', API_BASE_URL);
 export async function createRoom( roomName: string ) {
   console.log("방 생성");
 
-  const response = await fetch(`http://localhost:8000/api/chat/chat-rooms/`, {
+  const response = await fetch(`${API_BASE_URL}/chat/chat-rooms/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ export async function enterChatRoom(roomId: string) {
     console.log(`[API 테스트] 채팅방 입장 요청 - roomId: ${roomId}`);
     
     // TODO: 아래 코드를 활성화하면 실제 서버로 요청합니다
-    const response = await fetch(`http://localhost:8000/api/chat/chat-rooms/${roomId}`, {
+    const response = await fetch(`${API_BASE_URL}/chat/chat-rooms/${roomId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
