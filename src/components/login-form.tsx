@@ -17,14 +17,6 @@ const handleGithubLogin = () => {
   window.location.href = "http://localhost:8000/accounts/github/login/";
 };
 
-// 로그인 상태 확인
-const getCurrentUser = async () => {
-  const response = await fetch('http://localhost:8000/api/user/me/', {
-    credentials: 'include'
-  });
-  return response.json();
-};
-
 export function LoginForm({
   className,
   ...props

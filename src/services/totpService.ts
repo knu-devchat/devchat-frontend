@@ -10,10 +10,10 @@ export async function getTOTP() {
     console.log('[TOTP] getTOTP called (test-mode)');
 
     // Mocked response for local testing
-    const expiresIn = 30; // seconds
-    const now = Date.now();
-    const expiresAt = new Date(now + expiresIn * 1000).toISOString();
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    // const expiresIn = 30; // seconds
+    // const now = Date.now();
+    // const expiresAt = new Date(now + expiresIn * 1000).toISOString();
+    // const code = String(Math.floor(100000 + Math.random() * 900000));
 
     // Uncomment and adapt for real backend call:
     // const res = await fetch(`${localhost:8000/api/chat/rooms/}/auth/totp`, {

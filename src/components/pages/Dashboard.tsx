@@ -12,7 +12,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-import React from "react";
 import { AIChat } from "../common/AIChat";
 import { Chat } from "@/components/common/Chat";
 import { useRoom } from "@/hooks/useRoom";
@@ -20,10 +19,36 @@ import { TotpDialog } from "../totp-dialog";
 import { Button } from "@/components/ui/button";
 
 import { UserRoundPlus } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+
+const getCurrentUser = async () => {
+  const response = await fetch('http://localhost:8000/api/user/me/', {
+    credentials: 'include'
+  });
+  return response.json();
+};
+
+
 
 export default function Dashboard() {
   const { selectedRoom } = useRoom();
-  const totpRef = React.useRef<{ open: () => void } | null>(null);
+  const totpRef = React.useRef<{ open: () => void; } | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+        console.log("현재 사용자:", user);
+      } catch (err) {
+        console.error("유저 정보를 가져오지 못했습니다.", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
+  console.log("현재 사용자 상태:", currentUser);
 
   return (
     <SidebarProvider
@@ -49,7 +74,7 @@ export default function Dashboard() {
             </BreadcrumbList>
           </Breadcrumb>
           <Button variant="ghost" className="mr-2" onClick={() => totpRef.current?.open()}>
-            <UserRoundPlus/>
+            <UserRoundPlus />
           </Button>
           <TotpDialog ref={totpRef} />
           <AIChat className={"ml-auto"} />
