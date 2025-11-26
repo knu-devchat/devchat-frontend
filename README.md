@@ -73,8 +73,14 @@
 ## 1.4 방 TOTP 조회
 방 입장 후 TOTP 조회
 
-### `/api/chat/chat-rooms/<int:room_id>/access-code`
+### `POST /api/chat/chat-rooms/<int:room_id>/access-code`
 
+### Request
+```json
+{
+	"room_id": 12
+}
+```
 #### Response
 ```json
 {
