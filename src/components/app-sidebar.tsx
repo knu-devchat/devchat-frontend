@@ -14,11 +14,11 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
-  SidebarInput,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Input } from "@/components/ui/input";
 
 import { CreateRoom } from "@/components/createRoom";
 import { JoinRoom } from "@/components/join-room";
@@ -80,9 +80,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // IRL you should use the url/router.
   const [activeItem, setActiveItem] = React.useState(data.navMain[0]);
   const [rooms, setRooms] = React.useState(data.rooms);
+  const [searchQuery, setSearchQuery] = React.useState("");
   const createRoomRef = React.useRef<{ open: () => void } | null>(null);
   const joinRoomRef = React.useRef<{ open: () => void } | null>(null);
   const { setSelectedRoom } = useRoom();
+
+  // 검색어로 필터링된 방 목록
+  const filteredRooms = React.useMemo(() => {
+    if (!searchQuery.trim()) return rooms;
+    const query = searchQuery.toLowerCase();
+    return rooms.filter(
+      (room) =>
+        room.roomName.toLowerCase().includes(query) ||
+        room.subject.toLowerCase().includes(query)
+    );
+  }, [rooms, searchQuery]);
 
   const handleRoomCreated = (newRoom: { roomName: string; subject: string; date: string }) => {
     setRooms([newRoom, ...rooms]);
@@ -210,12 +222,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {activeItem?.title}
             </div>
           </div>
-          <SidebarInput placeholder="Type to search..." />
+          <Input 
+            placeholder="방 이름 또는 내용 검색..." 
+            value={searchQuery}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+            className="h-8 w-full"
+          />
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup className="px-0">
             <SidebarGroupContent>
-              {rooms.map((room) => (
+              {filteredRooms.map((room) => (
                 <a
                   href="#"
                   key={room.roomName}
