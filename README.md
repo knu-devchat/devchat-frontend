@@ -1,73 +1,136 @@
-# React + TypeScript + Vite
+# 📘 Chat Application Core API Specification (Minimal Version)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+본 문서는 방 생성, 방 추가(TOTP 인증), 방 입장, 메시지 조회, 메시지 전송의 최소 기능만 포함한 API 명세서입니다.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+# 1. Room API
 
-## React Compiler
+## 1.1 방 생성
+### `POST /api/chat/chat-rooms/`
+새로운 채팅방을 생성합니다.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+#### Request
+```json
+{
+  "name": "스터디룸",
+}
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+#### Response
+```json
+{
+  "room_id": 12,
+  "room_name": "스터디룸",
+  "admin": "username"
+}
+```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
+## 1.2 방 추가 (TOTP 인증)
+기존 방에 참여하려면 TOTP 인증이 필요합니다.
+
+### `POST /api/chat/chat-rooms/{room_id}/join/`
+
+#### Request
+```json
+{
+  "totp": "123456"
+}
+```
+
+#### Response (성공)
+```json
+{
+  "result": "success",
+  "room_id": 12
+}
+```
+
+#### Response (실패)
+```json
+{
+  "error": "invalid_totp"
+}
+```
+
+---
+
+## 1.3 방 입장 (내 방 목록에서 클릭 시)
+이미 참여한 방은 인증 없이 입장됩니다.
+
+### `GET /api/chat/chat-rooms/{room_id}/enter/`
+
+#### Response
+```json
+{
+  "result": "entered",
+  "room_id": 12
+}
+```
+
+## 1.4 방 TOTP 조회
+방 입장 후 TOTP 조회
+
+### `/api/chat/chat-rooms/<int:room_id>/access-code`
+
+#### Response
+```json
+{
+  "totp": 123456
+}
+```
+
+---
+
+# 2. Message API
+
+## 2.1 메시지 목록 조회
+### `GET /api/rooms/{room_id}/messages/?page=1`
+
+#### Response
+```json
+{
+  "page": 1,
+  "messages": [
+    {
+      "id": 101,
+      "sender": "taehyun",
+      "content": "오늘 회의 언제 할까요?",
+      "is_ai": false,
+      "created_at": "2025-11-26T12:00:00"
     },
-  },
-])
+    {
+      "id": 102,
+      "sender": "AI",
+      "content": "14시 이후로 시간이 비어 있습니다.",
+      "is_ai": true,
+      "created_at": "2025-11-26T12:00:02"
+    }
+  ]
+}
+```
+
+---
+
+## 2.2 메시지 전송
+### `POST /api/rooms/{room_id}/messages/`
+
+#### Request
+```json
+{
+  "content": "AI야 요약해줘"
+}
+```
+
+#### Response
+```json
+{
+  "id": 140,
+  "sender": "taehyun",
+  "content": "AI야 요약해줘",
+  "is_ai": false,
+  "created_at": "2025-11-26T12:05:00"
+}
 ```
