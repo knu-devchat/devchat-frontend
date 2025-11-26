@@ -12,7 +12,7 @@ console.log('[API] API_BASE_URL:', API_BASE_URL);
 // 엔드포인트: GET /rooms/:roomId
 // 설명: 특정 채팅방으로 입장합니다
 
-export async function createRoom() {
+export async function createRoom( roomName: string ) {
   console.log("방 생성");
 
   const response = await fetch(`http://localhost:8000/api/chat/chat-rooms/`, {
@@ -20,6 +20,7 @@ export async function createRoom() {
     headers: {
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({ roomName }),
   });
 
   if (!response.ok) {
