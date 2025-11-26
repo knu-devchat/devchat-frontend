@@ -38,12 +38,6 @@ const data = {
   },
   navMain: [
     {
-      title: "채팅",
-      url: "#",
-      icon: MessageCircleCode,
-      isActive: true,
-    },
-    {
       title: "방 생성",
       url: "#",
       icon: MessageCirclePlus,
