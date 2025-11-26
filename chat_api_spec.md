@@ -7,7 +7,7 @@
 # 1. Room API
 
 ## 1.1 방 생성
-### `POST /api/rooms/`
+### `POST /api/chat/chat-rooms/`
 새로운 채팅방을 생성합니다.
 
 #### Request
@@ -20,8 +20,9 @@
 #### Response
 ```json
 {
-  "id": 12,
-  "name": "스터디룸"
+  "room_id": 12,
+  "room_name": "스터디룸",
+  "admin": "username"
 }
 ```
 
@@ -30,7 +31,7 @@
 ## 1.2 방 추가 (TOTP 인증)
 기존 방에 참여하려면 TOTP 인증이 필요합니다.
 
-### `POST /api/rooms/{room_id}/add/`
+### `POST /api/chat/chat-rooms/{room_id}/join/`
 
 #### Request
 ```json
@@ -59,7 +60,7 @@
 ## 1.3 방 입장 (내 방 목록에서 클릭 시)
 이미 참여한 방은 인증 없이 입장됩니다.
 
-### `GET /api/rooms/{room_id}/enter/`
+### `GET /api/chat/chat-rooms/{room_id}/enter/`
 
 #### Response
 ```json
