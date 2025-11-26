@@ -59,7 +59,7 @@ export const JoinRoom = React.forwardRef<{ open: () => void }>(
             <DialogTitle>방 입장 (OTP)</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
-            <div className="py-4">
+            <div className="py-4 flex flex-col items-center">
               <InputOTPControlled value={otp} onChange={setOtp} />
               {error && (
                 <div className="text-sm text-destructive mt-2 text-center">{error}</div>
