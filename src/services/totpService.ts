@@ -10,7 +10,7 @@ export async function getTOTP(roomId?: string) {
     console.log('[TOTP] getTOTP called (test-mode)');
 
     // roomId가 없으면 기본값 사용
-    const targetRoomId = roomId || '5';
+    const targetRoomId = roomId || '8';
     
     const res = await fetch(`${API_BASE_URL}/chat-rooms/${targetRoomId}/access-code`, {
       method: 'GET',
