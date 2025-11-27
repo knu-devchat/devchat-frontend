@@ -50,7 +50,6 @@ export default function Dashboard() {
 
     fetchUser();
   }, []);
-  console.log("현재 사용자 상태:", currentUser);
 
   return (
     <SidebarProvider
@@ -82,9 +81,9 @@ export default function Dashboard() {
           <AIChat className={"ml-auto"} />
         </header>
         <div className="flex flex-col p-4 h-[calc(100vh-64px)]">
-          <div className="flex-1 min-h-0">
-            {/* <Chat /> */}
-          </div>
+          {/* <div className="flex-1 min-h-0">
+            <Chat />
+          </div> */}
         </div>
       </SidebarInset>
     </SidebarProvider>
