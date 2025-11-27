@@ -29,18 +29,20 @@ const getCurrentUser = async () => {
 };
 
 
-
 export default function Dashboard() {
   const { selectedRoom } = useRoom();
   const totpRef = React.useRef<{ open: () => void; } | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userRooms, setUserRooms] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const user = await getCurrentUser();
-        setCurrentUser(user);
-        console.log("현재 사용자:", user);
+        const userData = await getCurrentUser();
+        setCurrentUser(userData);
+        setUserRooms(userData.rooms || []);
+        console.log("현재 사용자:", userData);
+
       } catch (err) {
         console.error("유저 정보를 가져오지 못했습니다.", err);
       }
@@ -58,7 +60,7 @@ export default function Dashboard() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar />
+      <AppSidebar userRooms={userRooms} currentUser={currentUser} />
       <SidebarInset>
         <header className="bg-background sticky top-0 flex shrink-0 items-center gap-2 border-b p-4">
           <SidebarTrigger className="-ml-1" />
@@ -81,7 +83,7 @@ export default function Dashboard() {
         </header>
         <div className="flex flex-col p-4 h-[calc(100vh-64px)]">
           <div className="flex-1 min-h-0">
-            <Chat />
+            {/* <Chat /> */}
           </div>
         </div>
       </SidebarInset>

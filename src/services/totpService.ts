@@ -5,14 +5,14 @@
 // The real endpoint may require authentication and different path.
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-export async function getTOTP(roomId?: string) {
+export async function getTOTP(room_uuId?: string) {
   try {
     console.log('[TOTP] getTOTP called (test-mode)');
 
     // roomId가 없으면 기본값 사용
-    const targetRoomId = roomId || '8';
+    const targetRoomUuid = room_uuId || '8';
     
-    const res = await fetch(`${API_BASE_URL}/chat/chat-rooms/${targetRoomId}/access-code`, {
+    const res = await fetch(`${API_BASE_URL}/chat/chat-rooms/${targetRoomUuid}/access-code`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

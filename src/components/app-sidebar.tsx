@@ -30,11 +30,6 @@ import { DoorOpen } from 'lucide-react';
 
 // This is sample data
 const data = {
-  user: {
-    name: "개발자",
-    email: "developer@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "방 생성",
@@ -49,54 +44,47 @@ const data = {
       isActive: false,
     },
   ],
-  rooms: [
-    {
-      roomName: "자바 팀프로젝트",
-      subject: "프폰트엔드 개발 70% 완료함",
-      date: "21:23 AM",
-    },
-    {
-      roomName: "사이드 플젝",
-      subject: "빨리 백엔드 코드 짜줘",
-      date: "17:55 AM",
-    },
-    {
-      roomName: "개인 플젝",
-      subject: "메인페이지 디자인 수정 필요",
-      date: "05:34 AM",
-    },
-  ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  // Note: I'm using state to show active item.
-  // IRL you should use the url/router.
-  const [activeItem, setActiveItem] = React.useState(data.navMain[0]);
-  const [rooms, setRooms] = React.useState(data.rooms);
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const createRoomRef = React.useRef<{ open: () => void } | null>(null);
-  const joinRoomRef = React.useRef<{ open: () => void } | null>(null);
-  const { setSelectedRoom } = useRoom();
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  userRooms?: any[];
+  currentUser?: any;
+}
 
-  // 검색어로 필터링된 방 목록
+export function AppSidebar({ userRooms, currentUser, ...props }: AppSidebarProps) {
+  const [activeItem, setActiveItem] = React.useState(data.navMain[0]);
+  const createRoomRef = React.useRef<{ open: () => void; } | null>(null);
+  const joinRoomRef = React.useRef<{ open: () => void; } | null>(null);
+  const { setSelectedRoom } = useRoom();
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [rooms, setRooms] = React.useState<any[]>([]);
+
+  // 방 목록 업데이트
+  React.useEffect(() => {
+    if (userRooms && userRooms.length > 0) {
+      setRooms(userRooms);
+    }
+  }, [userRooms]);
+
+  // 방 검색
   const filteredRooms = React.useMemo(() => {
     if (!searchQuery.trim()) return rooms;
     const query = searchQuery.toLowerCase();
     return rooms.filter(
       (room) =>
-        room.roomName.toLowerCase().includes(query) ||
+        room.room_name?.toLowerCase().includes(query) ||
         room.subject.toLowerCase().includes(query)
     );
   }, [rooms, searchQuery]);
 
-  const handleRoomCreated = (newRoom: { roomName: string; subject: string; date: string }) => {
+  const handleRoomCreated = (newRoom: { roomName: string; subject: string; date: string; }) => {
     setRooms([newRoom, ...rooms]);
   };
 
-  const handleRoomClick = async (room: { roomName: string; subject: string; date: string }) => {
+  const handleRoomClick = async (room: { roomName: string; subject: string; date: string; }) => {
     // Context에 선택된 방 저장
     setSelectedRoom(room);
-    
+
     // 서버에 채팅방 입장 요청 (테스트 중)
     try {
       const result = await enterChatRoom(room.roomName);
@@ -179,7 +167,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         </SidebarMenuButton>
                         <JoinRoom ref={joinRoomRef} />
                       </div>
-                    ) : (                   
+                    ) : (
                       <SidebarMenuButton
                         tooltip={{
                           children: item.title,
@@ -194,7 +182,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <span>{item.title}</span>
                       </SidebarMenuButton>
                     )}
-                    
+
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -202,7 +190,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-          <NavUser user={data.user} />
+          <NavUser user={currentUser} />
         </SidebarFooter>
       </Sidebar>
 
@@ -215,8 +203,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {activeItem?.title}
             </div>
           </div>
-          <Input 
-            placeholder="방 이름 또는 내용 검색..." 
+          <Input
+            placeholder="방 이름 또는 내용 검색..."
             value={searchQuery}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
             className="h-8 w-full"
@@ -228,7 +216,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {filteredRooms.map((room) => (
                 <a
                   href="#"
-                  key={room.roomName}
+                  key={room.room_uuid}
                   onClick={(e) => {
                     e.preventDefault();
                     handleRoomClick(room);
@@ -236,10 +224,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0 cursor-pointer"
                 >
                   <div className="flex w-full items-center gap-2">
-                    <span>{room.roomName}</span>{" "}
-                    <span className="ml-auto text-xs">{room.date}</span>
+                    <span>{room.room_name}</span>{" "}
+                    <span className="ml-auto text-xs">{room.created_at}</span>
                   </div>
-                  <span className="font-medium">{room.subject}</span>
+                  <span className="font-medium">{room.subject || "마지막 메시지"}</span>
                 </a>
               ))}
             </SidebarGroupContent>

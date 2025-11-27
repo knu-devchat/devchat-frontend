@@ -35,7 +35,6 @@ export const TotpDialog = React.forwardRef(function TotpDialog(_props, ref) {
         setCode(res.totp ?? null);
       } catch (err: unknown) {
         if (!mounted) return;
-        // err may be Error or string
         const msg = err instanceof Error ? err.message : String(err);
         setError(msg);
       } finally {

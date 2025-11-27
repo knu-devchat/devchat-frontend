@@ -1,16 +1,6 @@
-// ========================================
-// 🔗 서버 엔드포인트 설정
-// ========================================
-// TODO: 백엔드 API 엔드포인트를 아래에서 설정하세요
 const API_BASE_URL = 'http://localhost:8000/api';
 
 console.log('[API] API_BASE_URL:', API_BASE_URL);
-
-// ========================================
-// 📨 채팅방 입장 API
-// ========================================
-// 엔드포인트: GET /rooms/:roomId
-// 설명: 특정 채팅방으로 입장합니다
 
 export async function createRoom( roomName: string ) {
   console.log("방 생성");
@@ -33,12 +23,12 @@ export async function createRoom( roomName: string ) {
   return data;
 }
 
-export async function enterChatRoom(roomId: string) {
+export async function enterChatRoom(room_uuid: string) {
   try {
-    console.log(`[API 테스트] 채팅방 입장 요청 - roomId: ${roomId}`);
+    console.log(`[API 테스트] 채팅방 입장 요청 - room_uuid: ${room_uuid}`);
     
     // TODO: 아래 코드를 활성화하면 실제 서버로 요청합니다
-    const response = await fetch(`${API_BASE_URL}/chat/chat-rooms/${roomId}`, {
+    const response = await fetch(`${API_BASE_URL}/chat/chat-rooms/${room_uuid}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -52,8 +42,6 @@ export async function enterChatRoom(roomId: string) {
     const data = await response.json();
     console.log('[API 응답] 채팅방 정보:', data);
     return data;
-    
-    return { success: true, message: '채팅방 입장 테스트 완료', roomId };
   } catch (error) {
     console.error('[API 에러] 채팅방 입장 실패:', error);
     throw error;
