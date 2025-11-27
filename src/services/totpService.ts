@@ -3,7 +3,7 @@
 
 // API endpoint (example): GET /auth/totp
 // The real endpoint may require authentication and different path.
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 export async function getTOTP(roomId?: string) {
   try {
