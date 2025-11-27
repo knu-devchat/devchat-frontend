@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import {
-  MessageCirclePlus,
-  MessageCircleCode,
+  MessageCirclePlus
 } from "lucide-react";
 
 import { NavUser } from "@/components/nav-user";
@@ -20,7 +19,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 
-import { CreateRoom } from "@/components/createRoom";
+import { CreateRoom } from "@/components/create-room";
 import { JoinRoom } from "@/components/join-room";
 
 import Logo from "@/assets/logo.svg";
