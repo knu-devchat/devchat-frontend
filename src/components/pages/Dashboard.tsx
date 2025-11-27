@@ -46,6 +46,8 @@ export default function Dashboard() {
 
       } catch (err) {
         console.error("유저 정보를 가져오지 못했습니다.", err);
+      } finally {
+        setLoading(false); // 로딩 완료
       }
     };
 
