@@ -34,6 +34,7 @@ export default function Dashboard() {
   const totpRef = React.useRef<{ open: () => void; } | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userRooms, setUserRooms] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -50,6 +51,10 @@ export default function Dashboard() {
 
     fetchUser();
   }, []);
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">로딩 중...</div>;
+  }
 
   return (
     <SidebarProvider
