@@ -2,7 +2,7 @@
 // 🔗 서버 엔드포인트 설정
 // ========================================
 // TODO: 백엔드 API 엔드포인트를 아래에서 설정하세요
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8000/api';
 
 console.log('[API] API_BASE_URL:', API_BASE_URL);
 
