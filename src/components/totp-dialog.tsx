@@ -11,7 +11,14 @@ import {
 // Label import removed; InputOTPControlled used as dialog body
 import { getTOTP } from "@/services/totpService";
 
-export const TotpDialog = React.forwardRef(function TotpDialog(_props, ref) {
+interface TotpDialogProps {
+  roomUuid: string;
+}
+
+export const TotpDialog = React.forwardRef<
+  { open: () => void; },
+  TotpDialogProps
+>(function TotpDialog({ roomUuid }, ref) {
 
   const [open, setOpen] = React.useState(false);
   const [code, setCode] = React.useState<string | null>(null);
@@ -30,7 +37,7 @@ export const TotpDialog = React.forwardRef(function TotpDialog(_props, ref) {
       setLoading(true);
       setError(null);
       try {
-        const res = await getTOTP();
+        const res = await getTOTP(roomUuid);
         if (!mounted) return;
         setCode(res.totp ?? null);
       } catch (err: unknown) {
@@ -43,7 +50,7 @@ export const TotpDialog = React.forwardRef(function TotpDialog(_props, ref) {
     }
     load();
     return () => { mounted = false; };
-  }, [open]);
+  }, [open, roomUuid]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

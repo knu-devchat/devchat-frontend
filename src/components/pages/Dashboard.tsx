@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { AIChat } from "../common/AIChat";
-import { Chat } from "@/components/common/Chat";
+// import { Chat } from "@/components/common/Chat";
 import { useRoom } from "@/hooks/useRoom";
 import { TotpDialog } from "../totp-dialog";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,6 @@ const getCurrentUser = async () => {
   });
   return response.json();
 };
-
 
 export default function Dashboard() {
   const { selectedRoom } = useRoom();
@@ -47,7 +46,7 @@ export default function Dashboard() {
       } catch (err) {
         console.error("유저 정보를 가져오지 못했습니다.", err);
       } finally {
-        setLoading(false); // 로딩 완료
+        setLoading(false);
       }
     };
 
@@ -77,14 +76,14 @@ export default function Dashboard() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbPage>{selectedRoom?.roomName || "방 선택"}</BreadcrumbPage>
+                <BreadcrumbPage>{(selectedRoom as any)?.room_name || "방 선택"}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
           <Button variant="ghost" className="mr-2" onClick={() => totpRef.current?.open()}>
             <UserRoundPlus />
           </Button>
-          <TotpDialog ref={totpRef} />
+          <TotpDialog ref={totpRef} roomUuid={(selectedRoom as any)?.room_uuid} />
           <AIChat className={"ml-auto"} />
         </header>
         <div className="flex flex-col p-4 h-[calc(100vh-64px)]">
