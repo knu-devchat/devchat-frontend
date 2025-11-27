@@ -1,5 +1,5 @@
-import React, { useImperativeHandle } from "react"
-import { Button } from "@/components/ui/button"
+import React, { useImperativeHandle } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -7,9 +7,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 // Label import removed; InputOTPControlled used as dialog body
-import { getTOTP } from "@/services/totpService"
+import { getTOTP } from "@/services/totpService";
 
 export const TotpDialog = React.forwardRef(function TotpDialog(_props, ref) {
 
@@ -32,7 +32,7 @@ export const TotpDialog = React.forwardRef(function TotpDialog(_props, ref) {
       try {
         const res = await getTOTP();
         if (!mounted) return;
-        setCode(res.code ?? null);
+        setCode(res.totp ?? null);
       } catch (err: unknown) {
         if (!mounted) return;
         // err may be Error or string
@@ -81,5 +81,5 @@ export const TotpDialog = React.forwardRef(function TotpDialog(_props, ref) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
-})
+  );
+});

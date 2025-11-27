@@ -5,29 +5,24 @@
 // The real endpoint may require authentication and different path.
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
-export async function getTOTP() {
+export async function getTOTP(roomId?: string) {
   try {
     console.log('[TOTP] getTOTP called (test-mode)');
 
-    // Mocked response for local testing
-    // const expiresIn = 30; // seconds
-    // const now = Date.now();
-    // const expiresAt = new Date(now + expiresIn * 1000).toISOString();
-    // const code = String(Math.floor(100000 + Math.random() * 900000));
-
-    // Uncomment and adapt for real backend call:
-    // const res = await fetch(`${localhost:8000/api/chat/rooms/}/auth/totp`, {
-    //   method: 'GET',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     // 'Authorization': `Bearer ${token}`,
-    //   },
-    // });
-    // if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    // return await res.json();
+    // roomId가 없으면 기본값 사용
+    const targetRoomId = roomId || '5';
     
-
-    return { success: true, code, expiresAt };
+    const res = await fetch(`${API_BASE_URL}/chat-rooms/${targetRoomId}/access-code`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+    
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    console.log(res);
+    return await res.json();
   } catch (err) {
     console.error('[TOTP] failed to fetch', err);
     throw err;
