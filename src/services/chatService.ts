@@ -20,6 +20,7 @@ export async function createRoom( roomName: string ) {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify({ room_name: roomName }),
   });
 
