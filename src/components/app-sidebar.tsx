@@ -24,7 +24,7 @@ import { JoinRoom } from "@/components/join-room";
 
 import Logo from "@/assets/logo.svg";
 import { useRoom } from "@/hooks/useRoom";
-import { enterChatRoom } from "@/services/chatService";
+import { getRoomDetails } from "@/services/chatService";
 
 import { DoorOpen } from 'lucide-react';
 
@@ -81,16 +81,12 @@ export function AppSidebar({ userRooms, currentUser, ...props }: AppSidebarProps
     setRooms([newRoom, ...rooms]);
   };
 
-  const handleRoomClick = async (room: { roomName: string; subject: string; date: string; }) => {
-    // Context에 선택된 방 저장
-    setSelectedRoom(room);
-
-    // 서버에 채팅방 입장 요청 (테스트 중)
+  const handleRoomClick = async (room: any) => {
     try {
-      const result = await enterChatRoom(room.roomName);
-      console.log('[입장 완료]', result);
+      const roomData = await getRoomDetails(room.room_uuid); // ✅ 새 함수명 사용
+      setSelectedRoom(roomData);
     } catch (error) {
-      console.error('[입장 실패]', error);
+      console.error("방 정보 조회 실패:", error);
     }
   };
 
