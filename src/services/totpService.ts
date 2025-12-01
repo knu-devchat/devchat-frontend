@@ -5,25 +5,31 @@
 // The real endpoint may require authentication and different path.
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-export async function getTOTP(room_uuid?: string) {
+// ========================================
+// 🔑 TOTP 생성 (GET /api/chat/access-code/?room_uuid=)
+// ========================================
+export async function getTOTP(room_uuid: string) {
   try {
-    console.log('[TOTP] getTOTP called (test-mode)');
+    console.log(`[API 요청] TOTP 생성 - room_uuid: ${room_uuid}`);
 
-    const targetRoomUuid = room_uuid;
-    
-    const res = await fetch(`${API_BASE_URL}/chat/chat-rooms/${targetRoomUuid}/access-code`, {
-      method: 'GET',
+    const response = await fetch(`${API_BASE_URL}/chat/access-code/`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
+      body: JSON.stringify({ room_uuid : room_uuid }),
     });
-    
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    console.log(res);
-    return await res.json();
-  } catch (err) {
-    console.error('[TOTP] failed to fetch', err);
-    throw err;
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('[API 응답] TOTP:', data); // { totp, interval, room_name, room_uuid }
+    return data;
+  } catch (error) {
+    console.error('[API 에러] TOTP 생성 실패:', error);
+    throw error;
   }
 }
