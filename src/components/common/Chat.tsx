@@ -7,21 +7,36 @@ type ChatMessage = {
   from: "me" | "remote" | "system";
 };
 
-export function Chat() {
+type ChatProps = {
+  roomUuid?: string; // 방 UUID
+};
+
+export function Chat({ roomUuid }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const wsRef = useRef<WebSocket | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  // 서버에서 알려준 WebSocket 주소 형식에 맞춰서 사용
-  const wsUrl =
-    (import.meta as unknown as { env?: { VITE_WS_URL?: string } }).env
-      ?.VITE_WS_URL || "ws://localhost:8000/ws/chat/";
-
   // 1) WebSocket 연결 관리
   useEffect(() => {
+    // 방 정보가 없으면 연결 안 함
+    if (!roomUuid) {
+      setMessages([
+        {
+          id: Date.now(),
+          text: "방이 선택되지 않았습니다.",
+          from: "system",
+        },
+      ]);
+      return;
+    }
+
     let mounted = true;
+
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws/chat/${roomUuid}/`;
+
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
@@ -73,11 +88,15 @@ export function Chat() {
 
     return () => {
       mounted = false;
-      ws.close();
+      try {
+        ws.close();
+      } catch {
+        /* ignore */
+      }
     };
-  }, [wsUrl]);
+  }, [roomUuid]);
 
-  // 2) 자동 스크롤 (이건 너 코드 그대로)
+  // 2) 자동 스크롤
   useEffect(() => {
     const el = listRef.current;
     if (!el) return;
@@ -102,7 +121,7 @@ export function Chat() {
     });
   }, [messages]);
 
-  // 3) 메시지 전송 – 이제 fetch가 아니라 ws.send
+  // 3) 메시지 전송 – ws.send 사용
   const send = () => {
     if (!text.trim()) return;
     const userText = text.trim();
@@ -117,7 +136,9 @@ export function Chat() {
     const payload = {
       type: "message",
       text: userText,
-      // roomUuid, user 정보 등 필요하면 여기 추가해서 서버랑 합의
+      // 필요하면 여기 roomUuid, userId 등 추가해서 서버랑 합의
+
+      room_uuid: roomUuid,
     };
 
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -133,6 +154,7 @@ export function Chat() {
       ]);
     }
   };
+
 
   return (
     <div className="flex flex-col h-full min-h-0 relative">
