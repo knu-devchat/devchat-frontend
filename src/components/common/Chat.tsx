@@ -171,7 +171,6 @@ export function Chat() {
     if (selectedRoom?.room_uuid) {
       console.log("📞 WebSocket 연결 함수 호출");
       connectWebSocket();
-      setMessages([]); // 새 방 입장 시 메시지 초기화
     } else {
       console.log("⏳ room_uuid 없음, WebSocket 연결 안함");
       // WebSocket 정리
