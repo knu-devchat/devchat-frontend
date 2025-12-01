@@ -28,7 +28,7 @@ export const LeaveRoomDialog = forwardRef<
 
     try {
       const response = await fetch(
-        `http://localhost:8000/api/chat/leave-room/`,
+        `http://localhost:8000/api/chat/delete-room/`,
         {
           method: "POST",
           //uuid를 body에 포함
