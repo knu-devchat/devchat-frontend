@@ -30,7 +30,6 @@ export async function createRoom(roomName: string) {
 }
 
 
-
 // ========================================
 // 🔐 채팅방 참가 (POST /api/chat/join/)
 // ========================================

@@ -6,7 +6,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 // ========================================
-// 🔑 TOTP 생성 (GET /api/chat/access-code/?room_uuid=)
+// 🔑 TOTP 생성 (POST /api/chat/access-code/)
 // ========================================
 export async function getTOTP(room_uuid: string) {
   try {
