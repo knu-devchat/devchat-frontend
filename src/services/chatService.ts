@@ -30,9 +30,9 @@ export async function createRoom(roomName: string) {
 }
 
 // ========================================
-// 🔑 TOTP 생성 (GET /api/chat/access-code/?room_uuid=)
+// 🔑 TOTP 생성 (POST /api/chat/access-code/)
 // ========================================
-export async function getAccessCode(room_uuid: string) {
+export async function getTOTP(room_uuid: string) {
   try {
     console.log(`[API 요청] TOTP 생성 - room_uuid: ${room_uuid}`);
 
