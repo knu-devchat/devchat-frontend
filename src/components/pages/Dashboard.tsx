@@ -16,9 +16,11 @@ import { AIChat } from "../common/AIChat";
 // import { Chat } from "@/components/common/Chat";
 import { useRoom } from "@/hooks/useRoom";
 import { TotpDialog } from "../totp-dialog";
+import { LeaveRoomDialog } from "../LeaveRoomDialog";
 import { Button } from "@/components/ui/button";
 
-import { UserRoundPlus } from 'lucide-react';
+import { UserRoundPlus, ArrowLeftToLine } from 'lucide-react';
+
 import React, { useEffect, useState } from "react";
 
 const getCurrentUser = async () => {
@@ -31,6 +33,7 @@ const getCurrentUser = async () => {
 export default function Dashboard() {
   const { selectedRoom } = useRoom();
   const totpRef = React.useRef<{ open: () => void; } | null>(null);
+  const leaveRoomRef = React.useRef<{ open: () => void; } | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userRooms, setUserRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,6 +88,10 @@ export default function Dashboard() {
           </Button>
           <TotpDialog ref={totpRef} roomUuid={(selectedRoom as any)?.room_uuid} />
           <AIChat className={"ml-auto"} />
+          <Button variant="ghost" className="mr-2" onClick={() => leaveRoomRef.current?.open()}>
+            <ArrowLeftToLine />
+          </Button>
+          <LeaveRoomDialog ref={leaveRoomRef} roomUuid={(selectedRoom as any)?.room_uuid} />
         </header>
         <div className="flex flex-col p-4 h-[calc(100vh-64px)]">
           {/* <div className="flex-1 min-h-0">
