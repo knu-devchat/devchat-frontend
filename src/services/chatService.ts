@@ -13,6 +13,7 @@ export async function createRoom(roomName: string) {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
+      body: JSON.stringify({ room_name: roomName }),
     });
 
     if (!response.ok) {
