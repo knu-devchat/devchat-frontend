@@ -42,7 +42,7 @@ export async function getAccessCode(room_uuid: string) {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify({ room_uuid }),
+      body: JSON.stringify({ room_uuid : room_uuid }),
     });
 
     if (!response.ok) {
