@@ -38,7 +38,7 @@ export const CreateRoom = forwardRef<{ open: () => void; }, { onRoomCreated: (ro
         roomName: roomName,
         subject: "새로운 방",
         date: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-        id: response.id,
+        id: response.room_uuid,
       };
 
       onRoomCreated(newRoom);
