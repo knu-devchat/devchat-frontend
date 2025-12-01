@@ -124,7 +124,7 @@ export function Chat() {
     <div className="flex flex-col h-full min-h-0 relative">
       <div
         ref={listRef}
-        className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2 bg-surface rounded-md pb-28"
+        className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2 bg-surface rounded-md"
       >
         {messages.map((m) => (
           <div
@@ -148,11 +148,11 @@ export function Chat() {
         <div ref={bottomRef} />
       </div>
 
-      <div className="sticky bottom-0 left-0 right-0 z-10 bg-background/80 backdrop-blur-sm py-2">
+      <div className="flex-shrink-0 bg-background/80 backdrop-blur-sm border-t p-4">
         {error && (
-          <div className="text-sm text-destructive px-4 mb-2">{error}</div>
+          <div className="text-sm text-destructive mb-2">{error}</div>
         )}
-        <div className="mt-2 flex gap-2 items-end px-4">
+        <div className="flex gap-2 items-end">
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -164,12 +164,12 @@ export function Chat() {
             }}
             disabled={loading}
             placeholder="메시지를 입력하세요 (Enter: 전송, Shift+Enter: 줄바꿈)"
-            className="h-24"
+            className="h-20 flex-1 resize-none"
           />
           <button
             onClick={send}
             disabled={loading || !text.trim()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50 h-20 flex items-center justify-center"
           >
             {loading ? "전송중..." : "전송"}
           </button>
