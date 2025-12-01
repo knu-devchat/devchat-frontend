@@ -36,6 +36,49 @@ export function AIChat({ className }: AIChatProps) {
   const wsRef = useRef<WebSocket | null>(null);
   const { selectedRoom } = useRoom();
 
+  // AI 세션 목록 조회 및 기존 세션 찾기
+  const findExistingSession = useCallback(async () => {
+    if (!selectedRoom?.room_uuid) {
+      console.warn("⚠️ 선택된 방이 없어 세션을 찾을 수 없음");
+      return null;
+    }
+
+    try {
+      console.log(`[AI_DEBUG] 기존 AI 세션 조회 시도: ${selectedRoom.room_uuid}`);
+
+      const response = await fetch(`http://localhost:8000/api/llm/sessions/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+      console.log('[AI_DEBUG] AI 세션 목록 응답:', data);
+
+      if (data.result === 'success' && data.sessions) {
+        // 현재 방의 AI 세션 찾기
+        const existingSession = data.sessions.find((session: any) =>
+          session.room_uuid === selectedRoom.room_uuid
+        );
+
+        if (existingSession) {
+          console.log(`[AI_SUCCESS] 기존 AI 세션 발견: ${existingSession.session_id}`);
+          return existingSession.session_id;
+        } else {
+          console.log('[AI_DEBUG] 기존 AI 세션이 없음');
+          return null;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error('[AI_ERROR] AI 세션 조회 중 오류:', error);
+      return null;
+    }
+  }, [selectedRoom?.room_uuid]);
+
   // AI 세션 생성
   const createAISession = useCallback(async () => {
     if (!selectedRoom?.room_uuid) {
@@ -128,7 +171,6 @@ export function AIChat({ className }: AIChatProps) {
           console.log("[AI_DEBUG] 새 메시지 추가:", newMessage);
 
           setMessages((prev) => {
-            // 중복 메시지 체크
             const existingMessage = prev.find(msg => msg.id === newMessage.id);
             if (existingMessage) {
               console.log("[AI_DEBUG] 중복 메시지 무시:", newMessage.id);
@@ -142,33 +184,52 @@ export function AIChat({ className }: AIChatProps) {
             setIsAIThinking(false);
           }
 
-        } else if (data.type === 'ai_joined') {
-          const joinMessage: AIMessage = {
-            id: `ai-join-${Date.now()}`,
+        }
+        else if (data.type === 'chat_history') {
+          // 이전 대화 내역 메시지 처리 (개별 메시지)
+          const historyMessage: AIMessage = {
+            id: data.message_id || `history-${Date.now()}-${Math.random()}`,
             text: data.message,
-            from: "system",
-            timestamp: data.timestamp
+            from: data.is_ai ? "ai" : (data.is_self ? "me" : "system"),
+            username: data.username,
+            timestamp: data.timestamp,
           };
-          setMessages((prev) => [...prev, joinMessage]);
 
-        } else if (data.type === 'ai_thinking') {
-          console.log("[AI_DEBUG] AI 응답 생성 중...");
-          setIsAIThinking(true);
+          console.log("[AI_DEBUG] 히스토리 메시지 추가:", historyMessage);
+          setMessages((prev) => [...prev, historyMessage]);
+        }
+        else if (data.type === 'message_history') {
+          // 대화 히스토리 일괄 처리 (배열로 받는 경우)
+          if (data.messages && Array.isArray(data.messages)) {
+            const historyMessages: AIMessage[] = data.messages.map((msg: any) => ({
+              id: msg.id,
+              text: msg.content,
+              from: msg.is_ai ? "ai" : (msg.is_self ? "me" : "system"),
+              username: msg.username,
+              timestamp: msg.timestamp,
+            }));
 
-        } else if (data.type === 'ai_error') {
-          console.log("[AI_ERROR] AI 오류:", data.message);
-          setIsAIThinking(false);
-          const errorMessage: AIMessage = {
-            id: `ai-error-${Date.now()}`,
+            console.log(`[AI_DEBUG] 히스토리 메시지 ${historyMessages.length}개 일괄 설정`);
+            setMessages(historyMessages);
+          }
+        }
+        else if (data.type === 'history_loaded') {
+          // 히스토리 로드 완료 알림
+          console.log(`[AI_DEBUG] ${data.message} (${data.count}개)`);
+
+          // 시스템 메시지로 표시하고 싶다면:
+          const systemMessage: AIMessage = {
+            id: `history-loaded-${Date.now()}`,
             text: data.message,
             from: "system"
           };
-          setMessages((prev) => [...prev, errorMessage]);
+          setMessages((prev) => [...prev, systemMessage]);
         }
       } catch (error) {
         console.error("[AI_ERROR] WebSocket 메시지 파싱 오류:", error);
       }
     };
+
 
     ws.onclose = (event) => {
       console.log(`[AI_DEBUG] AI WebSocket 연결 종료: ${sessionId}`, {
@@ -209,13 +270,27 @@ export function AIChat({ className }: AIChatProps) {
     };
   }, [sessionId, isOpen, connectAIWebSocket]);
 
-  // 드롭다운 열릴 때 세션 생성
+  // 드롭다운 열릴 때 기존 세션 확인 또는 새 세션 생성
   useEffect(() => {
     if (isOpen && !sessionId && !isCreatingSession) {
-      console.log("[AI_DEBUG] 드롭다운 열림, AI 세션 생성 시작");
-      createAISession();
+      console.log("[AI_DEBUG] 드롭다운 열림, 기존 세션 확인 시작");
+
+      const initializeSession = async () => {
+        // 1. 먼저 기존 세션 찾기
+        const existingSessionId = await findExistingSession();
+
+        if (existingSessionId) {
+          console.log("[AI_DEBUG] 기존 세션 사용:", existingSessionId);
+          setSessionId(existingSessionId);
+        } else {
+          console.log("[AI_DEBUG] 기존 세션 없음, 새 세션 생성");
+          await createAISession();
+        }
+      };
+
+      initializeSession();
     }
-  }, [isOpen, sessionId, isCreatingSession, createAISession]);
+  }, [isOpen, sessionId, isCreatingSession, findExistingSession, createAISession]);
 
   // 메시지 추가될 때 자동 스크롤
   useEffect(() => {
@@ -279,13 +354,14 @@ export function AIChat({ className }: AIChatProps) {
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
-      console.log("[AI_DEBUG] 드롭다운 닫힘, 연결 정리");
+      console.log("[AI_DEBUG] 드롭다운 닫힘, WebSocket 연결만 정리");
       if (wsRef.current) {
         wsRef.current.close();
         wsRef.current = null;
       }
       setIsConnected(false);
       setIsAIThinking(false);
+      // 🔥 세션과 메시지는 초기화 (새로운 대화로 시작)
       setSessionId(null);
       setMessages([]);
     }
@@ -332,8 +408,8 @@ export function AIChat({ className }: AIChatProps) {
                     ) : (
                       <div
                         className={`max-w-[90%] wrap-break-word px-3 py-2 rounded-lg ${m.from === "me"
-                            ? "ml-auto bg-primary text-primary-foreground"
-                            : "mr-auto bg-muted"
+                          ? "ml-auto bg-primary text-primary-foreground"
+                          : "mr-auto bg-muted"
                           }`}
                       >
                         {m.from === "ai" && (
