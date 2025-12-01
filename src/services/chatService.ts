@@ -60,11 +60,11 @@ export async function getRoomDetails(room_uuid: string) {
 // ========================================
 // 🔑 OTP로 방 참여 API
 // ========================================
-export async function joinRoomWithOTP(totp: string) {
+export async function joinRoomWithOTP(totp: string, room_uuid: string) {
   try {
     console.log(`[API 요청] OTP 방 참여 - otp: ${totp}`);
     
-    const response = await fetch(`${API_BASE_URL}/chat/join-with-otp/`, {
+    const response = await fetch(`${API_BASE_URL}/chat/chat-rooms/${room_uuid}/join`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

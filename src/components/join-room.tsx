@@ -12,8 +12,15 @@ import { InputOTPControlled } from "@/components/common/InputTOTP";
 import { joinRoomWithOTP } from "@/services/chatService";
 import { useRoom } from "@/hooks/useRoom";
 
-export const JoinRoom = React.forwardRef<{ open: () => void; }>(
-  function JoinRoom(_props, ref) {
+interface JoinRoomProps {
+  roomUuid?: string;
+}
+
+export const JoinRoom = React.forwardRef<
+  { open: () => void; },
+  JoinRoomProps
+>(
+  function JoinRoom({ roomUuid }, ref) {
     const [open, setOpen] = React.useState(false);
     const [totp, setTotp] = React.useState("");
     const [loading, setLoading] = React.useState(false);
@@ -29,10 +36,17 @@ export const JoinRoom = React.forwardRef<{ open: () => void; }>(
         setError("6자리 OTP를 입력하세요.");
         return;
       }
+
+      // roomUuid 검증 추가
+      if (!roomUuid) {
+        setError("방 정보가 필요합니다.");
+        return;
+      }
+
       setLoading(true);
       setError(null);
       try {
-        const res = await joinRoomWithOTP(totp);
+        const res = await joinRoomWithOTP(totp, roomUuid);
         console.log("join result", res);
 
         // 백엔드 응답 구조에 맞게 수정
@@ -42,7 +56,7 @@ export const JoinRoom = React.forwardRef<{ open: () => void; }>(
             room_name: res.room_name,
             participant_count: res.participant_count,
             admin: res.admin,
-            created_at: new Date().toISOString() // 백엔드에서 안보내주면 현재시간
+            created_at: new Date().toISOString()
           } as any);
           setTotp("");
           closeButtonRef.current?.click();
