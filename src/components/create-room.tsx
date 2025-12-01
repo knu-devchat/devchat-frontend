@@ -12,7 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createRoom } from "@/services/chatService";
 
-export const CreateRoom = forwardRef<{ open: () => void; }, { onRoomCreated: (room: { roomName: string; subject: string; date: string; }) => void; }>(({ onRoomCreated }, ref) => {
+export const CreateRoom = forwardRef<
+  { open: () => void; },
+  { onRoomCreated: (room: any) => void; } // 타입을 any로 변경
+>(({ onRoomCreated }, ref) => {
   const [roomName, setRoomName] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const closeButtonRef = React.useRef<HTMLButtonElement>(null);
@@ -22,7 +25,6 @@ export const CreateRoom = forwardRef<{ open: () => void; }, { onRoomCreated: (ro
   }));
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-
     e.preventDefault();
 
     if (!roomName.trim()) {
@@ -34,11 +36,12 @@ export const CreateRoom = forwardRef<{ open: () => void; }, { onRoomCreated: (ro
       const response = await createRoom(roomName);
       console.log("API 생성 방", response);
 
+      // 백엔드 응답 구조에 맞게 수정
       const newRoom = {
-        roomName: roomName,
-        subject: "새로운 방",
-        date: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-        id: response.room_uuid,
+        room_uuid: response.room_uuid,
+        room_name: response.room_name || roomName,
+        created_at: response.created_at || new Date().toISOString(),
+        subject: "새로 생성된 방" // 기본값
       };
 
       onRoomCreated(newRoom);
@@ -49,8 +52,6 @@ export const CreateRoom = forwardRef<{ open: () => void; }, { onRoomCreated: (ro
       alert("방 생성에 실패했습니다. 다시 시도해주세요.");
       return;
     }
-
-
   };
 
   return (

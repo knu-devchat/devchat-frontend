@@ -76,8 +76,18 @@ export function AppSidebar({ userRooms, currentUser, ...props }: AppSidebarProps
     );
   }, [rooms, searchQuery]);
 
-  const handleRoomCreated = (newRoom: { roomName: string; subject: string; date: string; }) => {
-    setRooms([newRoom, ...rooms]);
+  const handleRoomCreated = (newRoom: any) => {
+    console.log("새로 생성된 방:", newRoom);
+
+    // 백엔드 응답 구조에 맞게 방 추가 (더미 구조 제거)
+    const formattedRoom = {
+      room_uuid: newRoom.room_uuid,
+      room_name: newRoom.room_name,
+      created_at: newRoom.created_at || new Date().toISOString(),
+      subject: "새로 생성된 방"
+    };
+
+    setRooms([formattedRoom, ...rooms]); // 새 방을 맨 위에 추가
   };
 
   const handleRoomClick = async (room: any) => {

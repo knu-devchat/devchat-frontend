@@ -33,9 +33,9 @@ export async function createRoom(roomName: string) {
 // ========================================
 // 🔐 채팅방 참가 (POST /api/chat/join/)
 // ========================================
-export async function joinRoom(totp: string, room_uuid: string) {
+export async function joinRoomWithOTP(totp: string) {
   try {
-    console.log(`[API 요청] 채팅방 참가 - room_uuid: ${room_uuid}, totp: ${totp}`);
+    console.log(`[API 요청] 채팅방 참가 -  totp: ${totp}`);
 
     const response = await fetch(`${API_BASE_URL}/chat/join/`, {
       method: 'POST',
@@ -43,7 +43,7 @@ export async function joinRoom(totp: string, room_uuid: string) {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify({ room_uuid, totp }),
+      body: JSON.stringify({ totp }),
     });
 
     if (!response.ok) {

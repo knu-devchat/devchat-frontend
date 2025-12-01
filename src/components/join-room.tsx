@@ -9,18 +9,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { InputOTPControlled } from "@/components/common/InputTOTP";
-import { joinRoom } from "@/services/chatService";
+import { joinRoomWithOTP } from "@/services/chatService"; // 함수명 수정
 import { useRoom } from "@/hooks/useRoom";
 
 interface JoinRoomProps {
   roomUuid?: string;
+  onRoomJoined?: (room: any) => void; // 콜백 함수 추가
 }
 
 export const JoinRoom = React.forwardRef<
   { open: () => void; },
   JoinRoomProps
 >(
-  function JoinRoom({ roomUuid }, ref) {
+  function JoinRoom({ roomUuid, onRoomJoined }, ref) {
     const [open, setOpen] = React.useState(false);
     const [totp, setTotp] = React.useState("");
     const [loading, setLoading] = React.useState(false);
@@ -40,18 +41,26 @@ export const JoinRoom = React.forwardRef<
       setLoading(true);
       setError(null);
       try {
-        const res = await joinRoom(totp, roomUuid ?? ""); // roomUuid 검증 제거; 서버에서 처리
+        const res = await joinRoomWithOTP(totp); // roomUuid 제거
         console.log("join result", res);
 
         // 백엔드 응답 구조에 맞게 수정
         if (res.result === "success") {
-          setSelectedRoom({
+          const joinedRoom = {
             room_uuid: res.room_uuid,
             room_name: res.room_name,
             participant_count: res.participant_count,
             admin: res.admin,
             created_at: new Date().toISOString()
-          } as any);
+          };
+
+          setSelectedRoom(joinedRoom as any);
+
+          // 부모 컴포넌트에 방 참여 알림 (방 목록 업데이트용)
+          if (onRoomJoined) {
+            onRoomJoined(joinedRoom);
+          }
+
           setTotp("");
           closeButtonRef.current?.click();
         }
