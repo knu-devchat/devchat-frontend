@@ -2,83 +2,82 @@ import { useEffect, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 
 type ChatMessage = {
-    id: number;
-    text: string;
-    from: "me" | "remote" | "system";
+  id: number;
+  text: string;
+  from: "me" | "remote" | "system";
 };
 
 export function Chat() {
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
-    const [text, setText] = useState("");
-    const listRef = useRef<HTMLDivElement | null>(null);
-    const bottomRef = useRef<HTMLDivElement | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [text, setText] = useState("");
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
-    // 메시지 추가될 때 자동 스크롤
-    useEffect(() => {
+  // 메시지 추가될 때 자동 스크롤
+  useEffect(() => {
     const el = listRef.current;
     if (!el) return;
 
     const doScroll = () => {
+      try {
+        const max = el.scrollHeight - el.clientHeight;
+        el.scrollTop = max >= 0 ? max : 0;
+        el.scrollTo?.({ top: el.scrollHeight, behavior: "auto" });
         try {
-            const max = el.scrollHeight - el.clientHeight;
-            el.scrollTop = max >= 0 ? max : 0;
-            el.scrollTo?.({ top: el.scrollHeight, behavior: "auto" });
-            try {
-                const dev = (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV;
-                if (dev) {
-                console.debug("chat scroll", {
-                scrollHeight: el.scrollHeight,
-                clientHeight: el.clientHeight,
-                max,
-                bottomExists: !!bottomRef.current,
-                });
-                }
-            } catch {
-                void 0;
-            }
-        } catch (err) {
-            void err;
+          const dev = (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV;
+          if (dev) {
+            console.debug("chat scroll", {
+              scrollHeight: el.scrollHeight,
+              clientHeight: el.clientHeight,
+              max,
+              bottomExists: !!bottomRef.current,
+            });
+          }
+        } catch {
+          void 0;
         }
+      } catch (err) {
+        void err;
+      }
     };
 
     requestAnimationFrame(() => {
+      doScroll();
+      try {
+        bottomRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
+      } catch {
+        void 0;
+      }
+      setTimeout(() => {
         doScroll();
         try {
-        bottomRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
+          bottomRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
         } catch {
-            void 0;
+          void 0;
         }
-        }, 50);
-        setTimeout(() => {
-            doScroll();
-            try {
-                bottomRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
-            } catch {
-                void 0;
-            }
-        }, 50);
-        setTimeout(() => {
-            doScroll();
-            try {
-                bottomRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
-            } catch {
-                void 0;
-            }
-        }, 200);
+      }, 50);
+      setTimeout(() => {
+        doScroll();
+        try {
+          bottomRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
+        } catch {
+          void 0;
+        }
+      }, 200);
     });
-    }, [messages]);
+  }, [messages]);
 
-    const send = async () => {
-        if (!text.trim()) return;
+  const send = async () => {
+    if (!text.trim()) return;
 
-        const userText = text.trim();
+    const userText = text.trim();
 
-        // 내 메시지는 바로 UI에 반영
-        setMessages((m) => [
-        ...m,
-        { id: Date.now(), text: userText, from: "me" },
-        ]);
-        setText("");
+    // 내 메시지는 바로 UI에 반영
+    setMessages((m) => [
+      ...m,
+      { id: Date.now(), text: userText, from: "me" },
+    ]);
+    setText("");
 
     // 여기부터는 서버 통신 (예시: /api/chat)
     try {

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { AIChat } from "../common/AIChat";
-import { Chat } from "@/components/common/Chat";
+import  Chat  from "@/components/common/Chat";
 import { useRoom } from "@/hooks/useRoom";
 import { TotpDialog } from "../totp-dialog";
 import { LeaveRoomDialog } from "../LeaveRoomDialog";
