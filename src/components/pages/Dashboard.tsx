@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { AIChat } from "../common/AIChat";
-// import { Chat } from "@/components/common/Chat";
+import  Chat  from "@/components/common/Chat";
 import { useRoom } from "@/hooks/useRoom";
 import { TotpDialog } from "../totp-dialog";
 import { LeaveRoomDialog } from "../LeaveRoomDialog";
@@ -94,9 +94,9 @@ export default function Dashboard() {
           <LeaveRoomDialog ref={leaveRoomRef} roomUuid={(selectedRoom as any)?.room_uuid} />
         </header>
         <div className="flex flex-col p-4 h-[calc(100vh-64px)]">
-          {/* <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0">
             <Chat />
-          </div> */}
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
