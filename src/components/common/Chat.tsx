@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { useRoom } from "@/hooks/useRoom";
-import { getCurrentRoom } from "@/services/chatService";
+import { getCurrentRoom, fetchChatMessages } from "@/services/chatService";
 
 type ChatMessage = {
   id: number | string;
@@ -15,7 +15,8 @@ export function Chat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const [isConnected, setIsConnected] = useState(false);
-  const [isComposing, setIsComposing] = useState(false); // IME 조합 상태 추가
+  const [isComposing, setIsComposing] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false); // 메시지 로딩 상태
   const listRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -25,6 +26,38 @@ export function Chat() {
   console.log("=== Chat 컴포넌트 렌더링 ===");
   console.log("🏠 selectedRoom:", selectedRoom?.room_name);
   console.log("🆔 room_uuid:", selectedRoom?.room_uuid);
+
+  // 채팅 메시지 히스토리 로딩
+  const loadChatMessages = useCallback(async (roomUuid: string) => {
+    try {
+      setIsLoadingMessages(true);
+      console.log(`📚 채팅 메시지 히스토리 로딩 시작: ${roomUuid}`);
+
+      const messageData = await fetchChatMessages(roomUuid);
+
+      if (messageData.result === 'success' && messageData.messages) {
+        // 백엔드 메시지를 프론트엔드 형식으로 변환
+        const formattedMessages: ChatMessage[] = messageData.messages.map((msg: any) => ({
+          id: msg.id,
+          text: msg.content,
+          from: msg.is_self ? "me" : "remote",
+          username: msg.sender_username,
+          timestamp: msg.created_at,
+        }));
+
+        console.log(`✅ 채팅 메시지 ${formattedMessages.length}개 로딩 완료`);
+        setMessages(formattedMessages);
+      } else {
+        console.log("ℹ️ 로딩할 메시지가 없음");
+        setMessages([]);
+      }
+    } catch (error) {
+      console.error("❌ 채팅 메시지 로딩 실패:", error);
+      setMessages([]);
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchCurrentRoom = async () => {
@@ -36,6 +69,9 @@ export function Chat() {
         if (currentRoomData.result === 'success' && currentRoomData.room) {
           console.log("✅ 방 정보 설정:", currentRoomData.room);
           setSelectedRoom(currentRoomData.room);
+
+          // 방 정보 설정 후 채팅 메시지 로딩
+          await loadChatMessages(currentRoomData.room.room_uuid);
         } else {
           console.log("ℹ️ 선택된 방 없음");
         }
@@ -48,7 +84,15 @@ export function Chat() {
     if (!selectedRoom) {
       fetchCurrentRoom();
     }
-  }, [selectedRoom, setSelectedRoom]);
+  }, [selectedRoom, setSelectedRoom, loadChatMessages]);
+
+  // 방 변경 시 채팅 메시지 로딩
+  useEffect(() => {
+    if (selectedRoom?.room_uuid) {
+      console.log("🔄 방 변경으로 인한 메시지 로딩:", selectedRoom.room_name);
+      loadChatMessages(selectedRoom.room_uuid);
+    }
+  }, [selectedRoom?.room_uuid, loadChatMessages]);
 
   // WebSocket 연결 설정 - dependency 최소화
   const connectWebSocket = useCallback(() => {
@@ -79,13 +123,11 @@ export function Chat() {
       setIsConnected(true);
     };
 
-    // WebSocket onmessage 부분만 수정
+    // WebSocket onmessage 부분
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         console.log("📨 WebSocket 메시지 수신:", data);
-        console.log("🔍 is_self 값:", data.is_self);
-        console.log("🔍 message_id:", data.message_id);
 
         if (data.type === 'chat_message') {
           const newMessage: ChatMessage = {
@@ -97,7 +139,6 @@ export function Chat() {
           };
 
           console.log("📝 새 메시지 생성:", newMessage);
-          console.log("📋 현재 메시지 목록 길이:", messages.length);
 
           setMessages((prev) => {
             console.log("🔄 setMessages 호출 - 이전 메시지 수:", prev.length);
@@ -116,6 +157,23 @@ export function Chat() {
             console.log("✅ 메시지 추가 완료 - 새 메시지 수:", updatedMessages.length);
             return updatedMessages;
           });
+
+        } else if (data.type === 'message_history') {
+          // WebSocket으로 메시지 히스토리 수신 (백엔드에서 자동 전송하는 경우)
+          console.log("📚 WebSocket으로 메시지 히스토리 수신:", data);
+
+          if (data.messages && Array.isArray(data.messages)) {
+            const formattedMessages: ChatMessage[] = data.messages.map((msg: any) => ({
+              id: msg.id || msg.message_id,
+              text: msg.content || msg.message,
+              from: msg.is_self ? "me" : "remote",
+              username: msg.sender_username || msg.username,
+              timestamp: msg.created_at || msg.timestamp,
+            }));
+
+            console.log(`📚 WebSocket 히스토리 메시지 ${formattedMessages.length}개 설정`);
+            setMessages(formattedMessages);
+          }
 
         } else if (data.type === 'user_joined') {
           const joinMessage: ChatMessage = {
@@ -162,11 +220,11 @@ export function Chat() {
     };
 
     return ws;
-  }, [selectedRoom?.room_uuid]); // dependency를 room_uuid로만 제한
+  }, [selectedRoom?.room_uuid]);
 
   // 방 변경 시 WebSocket 재연결
   useEffect(() => {
-    console.log("🔄 방 변경 감지");
+    console.log("🔄 방 변경 감지 - WebSocket");
 
     if (selectedRoom?.room_uuid) {
       console.log("📞 WebSocket 연결 함수 호출");
@@ -188,7 +246,7 @@ export function Chat() {
         wsRef.current = null;
       }
     };
-  }, [selectedRoom?.room_uuid]); // connectWebSocket 제거
+  }, [selectedRoom?.room_uuid, connectWebSocket]);
 
   // 메시지 추가될 때 자동 스크롤
   useEffect(() => {
@@ -281,48 +339,54 @@ export function Chat() {
       {/* 연결 상태 표시 */}
       <div className="px-4 py-2 text-sm text-muted-foreground border-b">
         {selectedRoom.room_name} • {isConnected ? "🟢 연결됨" : "🔴 연결 안됨"}
+        {isLoadingMessages && " • 📚 메시지 로딩 중..."}
         <div className="text-xs">UUID: {selectedRoom.room_uuid}</div>
       </div>
 
-      {/* 메시지 목록 */}
       <div
         ref={listRef}
         className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2 bg-surface rounded-md pb-28"
       >
-        {messages.length === 0 && (
+        {isLoadingMessages ? (
+          <div className="text-center text-muted-foreground py-8">
+            <div>📚 채팅 메시지를 불러오는 중...</div>
+          </div>
+        ) : messages.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
             {selectedRoom.room_name}에 오신 것을 환영합니다!<br />
             첫 메시지를 보내보세요.
           </div>
+        ) : (
+          /* ✅ 여기서 messages.map()으로 메시지들을 렌더링 */
+          messages.map((message) => (
+            <div key={message.id} className="message-item">
+              {message.from === "system" ? (
+                <div className="text-sm text-muted-foreground text-center py-2">
+                  {message.text}
+                </div>
+              ) : (
+                <div
+                  className={`max-w-[80%] wrap-break-word px-3 py-2 rounded-lg ${message.from === "me"
+                    ? "ml-auto bg-primary/10"
+                    : "mr-auto bg-muted/20"
+                    }`}
+                >
+                  {message.from === "remote" && message.username && (
+                    <div className="text-xs text-muted-foreground mb-1">
+                      {message.username}
+                    </div>
+                  )}
+                  <div>{message.text}</div>
+                  {message.timestamp && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {new Date(message.timestamp).toLocaleTimeString()}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))
         )}
-        {messages.map((m) => (
-          <div key={m.id}>
-            {m.from === "system" ? (
-              <div className="text-sm text-muted-foreground text-center py-2">
-                {m.text}
-              </div>
-            ) : (
-              <div
-                className={`max-w-[80%] wrap-break-word px-3 py-2 rounded-lg ${m.from === "me"
-                  ? "ml-auto bg-primary/10"
-                  : "mr-auto bg-muted/20"
-                  }`}
-              >
-                {m.from === "remote" && m.username && (
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {m.username}
-                  </div>
-                )}
-                <div>{m.text}</div>
-                {m.timestamp && (
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {new Date(m.timestamp).toLocaleTimeString()}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
         <div ref={bottomRef} />
       </div>
 
@@ -365,7 +429,7 @@ export function Chat() {
                 : "연결 중..."
             }
             className="h-24"
-            disabled={!isConnected}
+            disabled={!isConnected || isLoadingMessages}
           />
         </div>
       </div>

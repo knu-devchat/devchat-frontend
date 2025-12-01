@@ -145,13 +145,13 @@ export async function getCurrentRoom() {
 }
 
 // ========================================
-// 📨 채팅 메시지 목록 조회 (GET /api/rooms/{room_id}/messages/?page=1)
+// 📨 채팅 메시지 목록 조회 (GET /api/chat/rooms/{room_uuid}/messages/)
 // ========================================
-export async function fetchChatMessages(room_uuid: string, page: number = 1) {
+export async function fetchChatMessages(room_uuid: string) {
   try {
-    console.log(`[API 요청] 채팅 메시지 조회 - room_uuid: ${room_uuid}, page: ${page}`);
+    console.log(`[API 요청] 채팅 메시지 조회 - room_uuid: ${room_uuid}`);
 
-    const response = await fetch(`${API_BASE_URL}/rooms/${room_uuid}/messages/?page=${page}`, {
+    const response = await fetch(`${API_BASE_URL}/chat/rooms/${room_uuid}/messages/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -165,6 +165,14 @@ export async function fetchChatMessages(room_uuid: string, page: number = 1) {
 
     const data = await response.json();
     console.log('[API 응답] 채팅 메시지:', data);
+    
+    // 응답 구조 확인
+    if (data.result === 'success' && data.messages) {
+      console.log(`✅ 메시지 ${data.messages.length}개 조회 완료`);
+      console.log(`📊 전체 메시지: ${data.pagination.total}개`);
+      console.log(`🏠 방 정보: ${data.room_info.room_name} (${data.room_info.participant_count}명)`);
+    }
+    
     return data;
   } catch (error) {
     console.error('[API 에러] 채팅 메시지 조회 실패:', error);
