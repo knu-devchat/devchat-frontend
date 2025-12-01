@@ -24,7 +24,7 @@ import { JoinRoom } from "@/components/join-room";
 
 import Logo from "@/assets/logo.svg";
 import { useRoom } from "@/hooks/useRoom";
-import { getRoomDetails } from "@/services/chatService";
+import { selectRoom, getCurrentRoom } from "@/services/chatService";
 
 import { DoorOpen } from 'lucide-react';
 
@@ -82,10 +82,18 @@ export function AppSidebar({ userRooms, currentUser, ...props }: AppSidebarProps
 
   const handleRoomClick = async (room: any) => {
     try {
-      const roomData = await getRoomDetails(room.room_uuid); // ✅ 새 함수명 사용
-      setSelectedRoom(roomData);
+      // 서버 세션에 선택된 방 저장
+      await selectRoom(room.room_uuid);
+      // 선택된 방의 상세 정보를 받아와 로컬 상태를 갱신
+      const res = await getCurrentRoom();
+      if (res && res.room) {
+        setSelectedRoom(res.room);
+      } else {
+        // fallback: set minimal room info
+        setSelectedRoom(room);
+      }
     } catch (error) {
-      console.error("방 정보 조회 실패:", error);
+      console.error("방 정보 조회/선택 실패:", error);
     }
   };
 

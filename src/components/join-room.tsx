@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { InputOTPControlled } from "@/components/common/InputTOTP";
-import { joinRoomWithOTP } from "@/services/chatService";
+import { joinRoom } from "@/services/chatService";
 import { useRoom } from "@/hooks/useRoom";
 
 interface JoinRoomProps {
@@ -46,7 +46,7 @@ export const JoinRoom = React.forwardRef<
       setLoading(true);
       setError(null);
       try {
-        const res = await joinRoomWithOTP(totp, roomUuid);
+        const res = await joinRoom(totp, roomUuid);
         console.log("join result", res);
 
         // 백엔드 응답 구조에 맞게 수정

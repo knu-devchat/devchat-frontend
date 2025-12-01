@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createRoom } from "@/services/chatService";
 
-export const CreateRoom = forwardRef<{ open: () => void; }, { onRoomCreated: (room: { roomName: string; subject: string; date: string; }) => void; }>(({ onRoomCreated }, ref) => {
+export const CreateRoom = forwardRef<{ open: () => void; }, { onRoomCreated: (room: any) => void; }>(({ onRoomCreated }, ref) => {
   const [roomName, setRoomName] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const closeButtonRef = React.useRef<HTMLButtonElement>(null);
@@ -35,10 +35,10 @@ export const CreateRoom = forwardRef<{ open: () => void; }, { onRoomCreated: (ro
       console.log("API 생성 방", response);
 
       const newRoom = {
-        roomName: roomName,
-        subject: "새로운 방",
-        date: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-        id: response.id,
+        room_uuid: response.room_uuid || response.id,
+        room_name: response.room_name || roomName,
+        subject: response.subject || "새로운 방",
+        created_at: new Date().toISOString(),
       };
 
       onRoomCreated(newRoom);
