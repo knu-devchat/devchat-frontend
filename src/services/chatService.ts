@@ -36,7 +36,7 @@ export async function getAccessCode(room_uuid: string) {
   try {
     console.log(`[API 요청] TOTP 생성 - room_uuid: ${room_uuid}`);
 
-    const response = await fetch(`${API_BASE_URL}/chat/access-code/?room_uuid=${encodeURIComponent(room_uuid)}`, {
+    const response = await fetch(`${API_BASE_URL}/chat/access-code/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
