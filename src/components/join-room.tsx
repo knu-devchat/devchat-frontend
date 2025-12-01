@@ -1,5 +1,5 @@
-import React, { useImperativeHandle } from "react"
-import { Button } from "@/components/ui/button"
+import React, { useImperativeHandle } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -7,50 +7,53 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { InputOTPControlled } from "@/components/common/InputTOTP"
-import { joinRoomWithOTP } from "@/services/chatService"
-import { useRoom } from "@/hooks/useRoom"
+} from "@/components/ui/dialog";
+import { InputOTPControlled } from "@/components/common/InputTOTP";
+import { joinRoomWithOTP } from "@/services/chatService";
+import { useRoom } from "@/hooks/useRoom";
 
-export const JoinRoom = React.forwardRef<{ open: () => void }>(
+export const JoinRoom = React.forwardRef<{ open: () => void; }>(
   function JoinRoom(_props, ref) {
-    const [open, setOpen] = React.useState(false)
-    const [otp, setOtp] = React.useState("")
-    const [loading, setLoading] = React.useState(false)
-    const [error, setError] = React.useState<string | null>(null)
-    const closeButtonRef = React.useRef<HTMLButtonElement>(null)
-    const { setSelectedRoom } = useRoom()
+    const [open, setOpen] = React.useState(false);
+    const [totp, setTotp] = React.useState("");
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState<string | null>(null);
+    const closeButtonRef = React.useRef<HTMLButtonElement>(null);
+    const { setSelectedRoom } = useRoom();
 
-    useImperativeHandle(ref, () => ({ open: () => setOpen(true) }))
+    useImperativeHandle(ref, () => ({ open: () => setOpen(true) }));
 
     const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault()
-      if (otp.length < 6) {
-        setError("6자리 OTP를 입력하세요.")
-        return
+      e.preventDefault();
+      if (totp.length < 6) {
+        setError("6자리 OTP를 입력하세요.");
+        return;
       }
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       try {
-        const res = await joinRoomWithOTP(otp)
-        console.log("join result", res)
-        // 성공시 선택된 방으로 설정하고 다이얼로그 닫기
-        if (res.success && res.room) {
+        const res = await joinRoomWithOTP(totp);
+        console.log("join result", res);
+
+        // 백엔드 응답 구조에 맞게 수정
+        if (res.result === "success") {
           setSelectedRoom({
-            roomName: res.room.roomName,
-            subject: res.room.subject || "",
-            date: new Date().toLocaleTimeString()
-          })
-          setOtp("")
-          closeButtonRef.current?.click()
+            room_uuid: res.room_uuid,
+            room_name: res.room_name,
+            participant_count: res.participant_count,
+            admin: res.admin,
+            created_at: new Date().toISOString() // 백엔드에서 안보내주면 현재시간
+          } as any);
+          setTotp("");
+          closeButtonRef.current?.click();
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        setError(msg)
+        const msg = err instanceof Error ? err.message : String(err);
+        setError(msg);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     return (
       <Dialog open={open} onOpenChange={setOpen}>
@@ -60,7 +63,7 @@ export const JoinRoom = React.forwardRef<{ open: () => void }>(
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="py-4 flex flex-col items-center">
-              <InputOTPControlled value={otp} onChange={setOtp} />
+              <InputOTPControlled value={totp} onChange={setTotp} />
               {error && (
                 <div className="text-sm text-destructive mt-2 text-center">{error}</div>
               )}
@@ -78,6 +81,6 @@ export const JoinRoom = React.forwardRef<{ open: () => void }>(
           </form>
         </DialogContent>
       </Dialog>
-    )
+    );
   }
-)
+);

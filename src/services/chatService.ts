@@ -1,38 +1,47 @@
 const API_BASE_URL = 'http://localhost:8000/api';
 
-console.log('[API] API_BASE_URL:', API_BASE_URL);
-
-export async function createRoom( roomName: string ) {
-  console.log("방 생성");
-
-  const response = await fetch(`${API_BASE_URL}/chat/chat-rooms/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify({ room_name: roomName }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+// ========================================
+// 🏠 채팅방 생성 API
+// ========================================
+export async function createRoom(roomName: string) {
+  try {
+    console.log("방 생성 요청:", roomName);
+    
+    const response = await fetch(`${API_BASE_URL}/chat/chat-rooms/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ room_name: roomName }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('[API 응답] 방 생성 완료:', data);
+    return data;
+  } catch (error) {
+    console.error('[API 에러] 방 생성 실패:', error);
+    throw error;
   }
-
-  const data = await response.json();
-  console.log('[API 응답] 방 생성 완료:', data);
-  return data;
 }
 
-export async function enterChatRoom(room_uuid: string) {
+// ========================================
+// 🔍 채팅방 상세 정보 조회 API
+// ========================================
+export async function getRoomDetails(room_uuid: string) {
   try {
-    console.log(`[API 테스트] 채팅방 입장 요청 - room_uuid: ${room_uuid}`);
+    console.log(`[API 요청] 채팅방 정보 조회 - room_uuid: ${room_uuid}`);
     
-    // TODO: 아래 코드를 활성화하면 실제 서버로 요청합니다
     const response = await fetch(`${API_BASE_URL}/chat/chat-rooms/${room_uuid}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     });
     
     if (!response.ok) {
@@ -43,95 +52,24 @@ export async function enterChatRoom(room_uuid: string) {
     console.log('[API 응답] 채팅방 정보:', data);
     return data;
   } catch (error) {
-    console.error('[API 에러] 채팅방 입장 실패:', error);
+    console.error('[API 에러] 채팅방 정보 조회 실패:', error);
     throw error;
   }
 }
 
 // ========================================
-// 📨 채팅 메시지 목록 조회 API
+// 🔑 OTP로 방 참여 API
 // ========================================
-// 엔드포인트: GET /rooms/:roomId/messages?limit=50
-// 설명: 특정 채팅방의 메시지 목록을 조회합니다
-export async function fetchChatMessages(roomId: string, limit: number = 50) {
+export async function joinRoomWithOTP(totp: string) {
   try {
-    console.log(`[API 테스트] 채팅 메시지 조회 - roomId: ${roomId}, limit: ${limit}`);
+    console.log(`[API 요청] OTP 방 참여 - otp: ${totp}`);
     
-    // TODO: 아래 코드를 활성화하면 실제 서버로 요청합니다
-    // const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/messages?limit=${limit}`, {
-    //   method: 'GET',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    // });
-    // 
-    // if (!response.ok) {
-    //   throw new Error(`HTTP error! status: ${response.status}`);
-    // }
-    // 
-    // const data = await response.json();
-    // console.log('[API 응답] 채팅 메시지:', data);
-    // return data;
-    
-    return { success: true, messages: [], roomId };
-  } catch (error) {
-    console.error('[API 에러] 채팅 메시지 조회 실패:', error);
-    throw error;
-  }
-}
-
-// ========================================
-// 📨 채팅 메시지 전송 API
-// ========================================
-// 엔드포인트: POST /rooms/:roomId/messages
-// 요청 본문: { content: string }
-// 설명: 특정 채팅방에 메시지를 전송합니다
-export async function sendChatMessage(roomId: string, message: string) {
-  try {
-    console.log(`[API 테스트] 채팅 메시지 전송 - roomId: ${roomId}, message: "${message}"`);
-    
-    // TODO: 아래 코드를 활성화하면 실제 서버로 요청합니다
-    // const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/messages`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     // 'Authorization': `Bearer ${token}` // 필요시 추가
-    //   },
-    //   body: JSON.stringify({ content: message }),
-    // });
-    // 
-    // if (!response.ok) {
-    //   throw new Error(`HTTP error! status: ${response.status}`);
-    // }
-    // 
-    // const data = await response.json();
-    // console.log('[API 응답] 메시지 전송 완료:', data);
-    // return data;
-    
-    return { success: true, message: '메시지 전송 테스트 완료', roomId };
-  } catch (error) {
-    console.error('[API 에러] 채팅 메시지 전송 실패:', error);
-    throw error;
-  }
-}
-
-// ========================================
-// 📨 OTP로 방 입장 API
-// ========================================
-// 엔드포인트: POST /rooms/join
-// 요청 본문: { otp: string }
-// 설명: OTP 코드로 채팅방에 입장합니다
-export async function joinRoomWithOTP(totp: string, room_uuid: string) {
-  try {
-    console.log(`[API 테스트] OTP 방 입장 요청 - otp: ${totp}`);
-    
-    // TODO: 아래 코드를 활성화하면 실제 서버로 요청합니다
-    const response = await fetch(`${API_BASE_URL}/chatrooms/${room_uuid}/join/`, {
+    const response = await fetch(`${API_BASE_URL}/chat/join-with-otp/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // 'Authorization': `Bearer ${token}` // 필요시 추가
       },
+      credentials: 'include',
       body: JSON.stringify({ totp }),
     });
     
@@ -140,21 +78,67 @@ export async function joinRoomWithOTP(totp: string, room_uuid: string) {
     }
      
     const data = await response.json();
-    console.log('[API 응답] 방 입장 완료:', data);
+    console.log('[API 응답] 방 참여 완료:', data);
     return data;
-    
-    // 테스트용 모의 응답
-    // return {
-    //   success: true,
-    //   message: 'OTP 방 입장 테스트 완료',
-    //   room: {
-    //     roomName: `방-${totp}`,
-    //     subject: 'OTP로 입장한 방',
-    //     date: new Date().toLocaleTimeString()
-    //   }
-    // };
   } catch (error) {
-    console.error('[API 에러] OTP 방 입장 실패:', error);
+    console.error('[API 에러] OTP 방 참여 실패:', error);
+    throw error;
+  }
+}
+
+// ========================================
+// 📨 채팅 메시지 목록 조회 API
+// ========================================
+export async function fetchChatMessages(room_uuid: string, limit: number = 50) {
+  try {
+    console.log(`[API 요청] 채팅 메시지 조회 - room_uuid: ${room_uuid}, limit: ${limit}`);
+    
+    const response = await fetch(`${API_BASE_URL}/chat/chat-rooms/${room_uuid}/messages/?limit=${limit}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('[API 응답] 채팅 메시지:', data);
+    return data;
+  } catch (error) {
+    console.error('[API 에러] 채팅 메시지 조회 실패:', error);
+    throw error;
+  }
+}
+
+// ========================================
+// 💬 채팅 메시지 전송 API
+// ========================================
+export async function sendChatMessage(room_uuid: string, message: string) {
+  try {
+    console.log(`[API 요청] 채팅 메시지 전송 - room_uuid: ${room_uuid}, message: "${message}"`);
+    
+    const response = await fetch(`${API_BASE_URL}/chat/chat-rooms/${room_uuid}/messages/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ content: message }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('[API 응답] 메시지 전송 완료:', data);
+    return data;
+  } catch (error) {
+    console.error('[API 에러] 채팅 메시지 전송 실패:', error);
     throw error;
   }
 }
