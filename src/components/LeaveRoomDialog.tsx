@@ -28,9 +28,14 @@ export const LeaveRoomDialog = forwardRef<
 
     try {
       const response = await fetch(
-        `http://localhost:8000/api/rooms/${roomUuid}/leave/`,
+        `http://localhost:8000/api/chat/leave-room/`,
         {
           method: "POST",
+          //uuid를 body에 포함
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ room_uuid: roomUuid }),
           credentials: "include",
         }
       );
