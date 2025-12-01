@@ -10,10 +10,74 @@ type ChatMessage = {
 export function Chat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
+  const wsRef = useRef<WebSocket | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  // 메시지 추가될 때 자동 스크롤
+  // 서버에서 알려준 WebSocket 주소 형식에 맞춰서 사용
+  const wsUrl =
+    (import.meta as unknown as { env?: { VITE_WS_URL?: string } }).env
+      ?.VITE_WS_URL || "ws://localhost:8000/ws/chat/";
+
+  // 1) WebSocket 연결 관리
+  useEffect(() => {
+    let mounted = true;
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+
+    ws.addEventListener("open", () => {
+      if (!mounted) return;
+      setMessages((m) => [
+        ...m,
+        { id: Date.now(), text: "서버에 연결되었습니다.", from: "system" },
+      ]);
+    });
+
+    ws.addEventListener("message", (ev) => {
+      if (!mounted) return;
+      try {
+        const data = JSON.parse(ev.data);
+        const text =
+          typeof data === "string" ? data : data.text ?? JSON.stringify(data);
+        setMessages((m) => [
+          ...m,
+          { id: Date.now(), text, from: "remote" },
+        ]);
+      } catch {
+        setMessages((m) => [
+          ...m,
+          { id: Date.now(), text: ev.data, from: "remote" },
+        ]);
+      }
+    });
+
+    ws.addEventListener("close", () => {
+      if (!mounted) return;
+      setMessages((m) => [
+        ...m,
+        { id: Date.now(), text: "연결이 닫혔습니다.", from: "system" },
+      ]);
+    });
+
+    ws.addEventListener("error", () => {
+      if (!mounted) return;
+      setMessages((m) => [
+        ...m,
+        {
+          id: Date.now(),
+          text: "웹소켓 에러가 발생했습니다.",
+          from: "system",
+        },
+      ]);
+    });
+
+    return () => {
+      mounted = false;
+      ws.close();
+    };
+  }, [wsUrl]);
+
+  // 2) 자동 스크롤 (이건 너 코드 그대로)
   useEffect(() => {
     const el = listRef.current;
     if (!el) return;
@@ -23,19 +87,6 @@ export function Chat() {
         const max = el.scrollHeight - el.clientHeight;
         el.scrollTop = max >= 0 ? max : 0;
         el.scrollTo?.({ top: el.scrollHeight, behavior: "auto" });
-        try {
-          const dev = (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV;
-          if (dev) {
-            console.debug("chat scroll", {
-              scrollHeight: el.scrollHeight,
-              clientHeight: el.clientHeight,
-              max,
-              bottomExists: !!bottomRef.current,
-            });
-          }
-        } catch {
-          void 0;
-        }
       } catch (err) {
         void err;
       }
@@ -48,66 +99,35 @@ export function Chat() {
       } catch {
         void 0;
       }
-      setTimeout(() => {
-        doScroll();
-        try {
-          bottomRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
-        } catch {
-          void 0;
-        }
-      }, 50);
-      setTimeout(() => {
-        doScroll();
-        try {
-          bottomRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
-        } catch {
-          void 0;
-        }
-      }, 200);
     });
   }, [messages]);
 
-  const send = async () => {
+  // 3) 메시지 전송 – 이제 fetch가 아니라 ws.send
+  const send = () => {
     if (!text.trim()) return;
-
     const userText = text.trim();
 
-    // 내 메시지는 바로 UI에 반영
+    // 화면에 내 메시지 먼저 추가
     setMessages((m) => [
       ...m,
       { id: Date.now(), text: userText, from: "me" },
     ]);
     setText("");
 
-    // 여기부터는 서버 통신 (예시: /api/chat)
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: userText }),
-      });
+    const payload = {
+      type: "message",
+      text: userText,
+      // roomUuid, user 정보 등 필요하면 여기 추가해서 서버랑 합의
+    };
 
-      if (!res.ok) {
-        throw new Error("server error");
-      }
-
-      const data = await res.json();
-      const replyText =
-        typeof data === "string"
-          ? data
-          : data.text ?? JSON.stringify(data);
-
-      setMessages((m) => [
-        ...m,
-        { id: Date.now(), text: replyText, from: "remote" },
-      ]);
-    } catch (err) {
-      console.error(err);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify(payload));
+    } else {
       setMessages((m) => [
         ...m,
         {
           id: Date.now(),
-          text: "서버와 통신 중 오류가 발생했습니다.",
+          text: "서버에 연결되어 있지 않습니다.",
           from: "system",
         },
       ]);
@@ -145,7 +165,7 @@ export function Chat() {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                void send();
+                send();
               }
             }}
             placeholder="메시지를 입력하세요 (Enter: 전송, Shift+Enter: 줄바꿈)"
