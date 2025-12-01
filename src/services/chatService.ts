@@ -36,7 +36,7 @@ export async function getRoomDetails(room_uuid: string) {
   try {
     console.log(`[API 요청] 채팅방 정보 조회 - room_uuid: ${room_uuid}`);
     
-    const response = await fetch(`${API_BASE_URL}/chat/chat-rooms/${room_uuid}`, {
+    const response = await fetch(`${API_BASE_URL}/chat/chat-rooms/${room_uuid}/view/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

@@ -28,7 +28,6 @@ import { getRoomDetails } from "@/services/chatService";
 
 import { DoorOpen } from 'lucide-react';
 
-// This is sample data
 const data = {
   navMain: [
     {
