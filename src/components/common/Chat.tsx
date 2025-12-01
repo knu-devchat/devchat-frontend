@@ -34,8 +34,7 @@ export function Chat({ roomUuid }: ChatProps) {
 
     let mounted = true;
 
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws/chat/${roomUuid}/`;
+    const wsUrl = `ws://localhost:8000/ws/chat/${roomUuid}/`;
 
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
