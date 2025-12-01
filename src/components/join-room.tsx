@@ -37,16 +37,10 @@ export const JoinRoom = React.forwardRef<
         return;
       }
 
-      // roomUuid 검증 추가
-      if (!roomUuid) {
-        setError("방 정보가 필요합니다.");
-        return;
-      }
-
       setLoading(true);
       setError(null);
       try {
-        const res = await joinRoom(totp, roomUuid);
+        const res = await joinRoom(totp, roomUuid ?? ""); // roomUuid 검증 제거; 서버에서 처리
         console.log("join result", res);
 
         // 백엔드 응답 구조에 맞게 수정
