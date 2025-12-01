@@ -13,7 +13,6 @@ export async function createRoom(roomName: string) {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify({ name: roomName }),
     });
 
     if (!response.ok) {
@@ -22,7 +21,6 @@ export async function createRoom(roomName: string) {
 
     const data = await response.json();
     console.log('[API 응답] 방 생성 완료:', data);
-    return data; // { room_uuid, room_name, admin, status }
   } catch (error) {
     console.error('[API 에러] 방 생성 실패:', error);
     throw error;
