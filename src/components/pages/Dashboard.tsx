@@ -13,13 +13,13 @@ import {
 } from "@/components/ui/sidebar";
 
 import { AIChat } from "../common/AIChat";
-import  Chat  from "@/components/common/Chat";
+import Chat from "@/components/common/Chat";
 import { useRoom } from "@/hooks/useRoom";
 import { TotpDialog } from "../totp-dialog";
 import { LeaveRoomDialog } from "../LeaveRoomDialog";
 import { Button } from "@/components/ui/button";
 
-import { UserRoundPlus, ArrowLeftToLine } from 'lucide-react';
+import { UserRoundPlus, ArrowLeftToLine, MessageCircle } from 'lucide-react';
 
 import React, { useEffect, useState } from "react";
 
@@ -69,36 +69,56 @@ export default function Dashboard() {
       }
     >
       <AppSidebar userRooms={userRooms} currentUser={currentUser} />
-      <SidebarInset>
-        <header className="bg-background sticky top-0 flex shrink-0 items-center gap-2 border-b p-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-[orientation=vertical]:h-4"
-          />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage>{(selectedRoom as any)?.room_name || "방 선택"}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <Button variant="ghost" className="mr-2" onClick={() => totpRef.current?.open()}>
-            <UserRoundPlus />
-          </Button>
-          <TotpDialog ref={totpRef} roomUuid={(selectedRoom as any)?.room_uuid} />
-          <AIChat className={"ml-auto"} />
-          <Button variant="ghost" className="mr-2" onClick={() => leaveRoomRef.current?.open()}>
-            <ArrowLeftToLine />
-          </Button>
-          <LeaveRoomDialog ref={leaveRoomRef} roomUuid={(selectedRoom as any)?.room_uuid} />
-        </header>
-        <div className="flex flex-col p-4 h-[calc(100vh-64px)]">
-          <div className="flex-1 min-h-0">
-            <Chat />
+
+      {/* 🔥 채팅방이 선택되었을 때만 메인 컨텐츠 표시 */}
+      {selectedRoom ? (
+        <SidebarInset>
+          <header className="bg-background sticky top-0 flex shrink-0 items-center gap-2 border-b p-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 data-[orientation=vertical]:h-4"
+            />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{(selectedRoom as any)?.room_name || "방 선택"}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+            <Button variant="ghost" className="mr-2" onClick={() => totpRef.current?.open()}>
+              <UserRoundPlus />
+            </Button>
+            <TotpDialog ref={totpRef} roomUuid={(selectedRoom as any)?.room_uuid} />
+            <AIChat className={"ml-auto"} />
+            <Button variant="ghost" className="mr-2" onClick={() => leaveRoomRef.current?.open()}>
+              <ArrowLeftToLine />
+            </Button>
+            <LeaveRoomDialog ref={leaveRoomRef} roomUuid={(selectedRoom as any)?.room_uuid} />
+          </header>
+          <div className="flex flex-col p-4 h-[calc(100vh-64px)]">
+            <div className="flex-1 min-h-0">
+              <Chat />
+            </div>
+          </div>
+        </SidebarInset>
+      ) : (
+        /* 🔥 채팅방이 선택되지 않았을 때 표시할 영역 */
+        <div className="flex flex-1 items-center justify-center bg-muted/10">
+          <div className="text-center space-y-4">
+            <MessageCircle className="w-16 h-16 mx-auto text-muted-foreground" />
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold text-muted-foreground">
+                채팅방을 선택해주세요
+              </h2>
+              <p className="text-sm text-muted-foreground max-w-md">
+                왼쪽 사이드바에서 참여할 채팅방을 선택하거나<br />
+                새로운 방을 만들어 대화를 시작해보세요.
+              </p>
+            </div>
           </div>
         </div>
-      </SidebarInset>
+      )}
     </SidebarProvider>
   );
 }
