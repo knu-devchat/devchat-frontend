@@ -51,7 +51,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ userRooms, currentUser, ...props }: AppSidebarProps) {
-  const [activeItem, setActiveItem] = React.useState(data.navMain[0]);
+  const [activeItem, setActiveItem] = React.useState({ title: "방 목록" });
   const createRoomRef = React.useRef<{ open: () => void; } | null>(null);
   const joinRoomRef = React.useRef<{ open: () => void; } | null>(null);
   const { setSelectedRoom } = useRoom();
