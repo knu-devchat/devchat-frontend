@@ -463,19 +463,12 @@ export function AIChat({ className }: AIChatProps) {
                   }}
                   placeholder={
                     isConnected
-                      ? "AI에게 질문하기... (Enter: 전송, Shift+Enter: 줄바꿈)"
+                      ? "AI에게 질문하기..."
                       : "연결 중..."
                   }
                   className="min-h-[60px] resize-none"
                   disabled={!isConnected || isCreatingSession || isAIThinking}
                 />
-                <Button
-                  onClick={sendMessage}
-                  disabled={!isConnected || !text.trim() || isCreatingSession || isAIThinking}
-                  size="sm"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
               </div>
               <div className="text-xs text-muted-foreground mt-1">
                 {selectedRoom ? `${selectedRoom.room_name}에서 AI 채팅` : "방을 선택해주세요"}
@@ -484,6 +477,6 @@ export function AIChat({ className }: AIChatProps) {
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
-    </div>
+    </div >
   );
 }

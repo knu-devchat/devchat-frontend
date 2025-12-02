@@ -472,7 +472,7 @@ export function Chat({ onLastMessageChange }: ChatProps) {
             }}
             placeholder={
               isConnected
-                ? "메시지를 입력하세요 (Enter: 전송, Shift+Enter: 줄바꿈)"
+                ? "메시지를 입력하세요"
                 : "연결 중..."
             }
             className="h-24"
