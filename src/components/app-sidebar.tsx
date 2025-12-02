@@ -55,7 +55,6 @@ export function AppSidebar({ userRooms, currentUser, ...props }: AppSidebarProps
   const createRoomRef = React.useRef<{ open: () => void; } | null>(null);
   const joinRoomRef = React.useRef<{ open: () => void; } | null>(null);
   const { setSelectedRoom } = useRoom();
-  const [searchQuery, setSearchQuery] = React.useState("");
   const [rooms, setRooms] = React.useState<any[]>([]);
 
   // 방 목록 업데이트
@@ -64,17 +63,6 @@ export function AppSidebar({ userRooms, currentUser, ...props }: AppSidebarProps
       setRooms(userRooms);
     }
   }, [userRooms]);
-
-  // 방 검색
-  const filteredRooms = React.useMemo(() => {
-    if (!searchQuery.trim()) return rooms;
-    const query = searchQuery.toLowerCase();
-    return rooms.filter(
-      (room) =>
-        room.room_name?.toLowerCase().includes(query) ||
-        room.subject.toLowerCase().includes(query)
-    );
-  }, [rooms, searchQuery]);
 
   const handleRoomCreated = (newRoom: any) => {
     console.log("새로 생성된 방:", newRoom);
@@ -216,12 +204,6 @@ export function AppSidebar({ userRooms, currentUser, ...props }: AppSidebarProps
               {activeItem?.title}
             </div>
           </div>
-          <Input
-            placeholder="방 이름 또는 내용 검색..."
-            value={searchQuery}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-            className="h-8 w-full"
-          />
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup className="px-0">
