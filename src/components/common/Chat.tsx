@@ -11,16 +11,44 @@ type ChatMessage = {
   timestamp?: string;
 };
 
-export function Chat() {
+interface ChatProps {
+  // 🔥 마지막 메시지 정보를 상위로 전달하는 콜백 추가
+  onLastMessageChange?: (roomUuid: string, lastMessage: ChatMessage | null) => void;
+}
+
+export function Chat({ onLastMessageChange }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [isComposing, setIsComposing] = useState(false);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false); // 메시지 로딩 상태
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const { selectedRoom, setSelectedRoom } = useRoom();
+
+  // 🔥 마지막 메시지 정보를 상위로 전달하는 함수
+  const updateLastMessage = useCallback((newMessages: ChatMessage[]) => {
+    if (!selectedRoom?.room_uuid || !onLastMessageChange) return;
+
+    // system 메시지를 제외한 실제 채팅 메시지 중 가장 최근 것 찾기
+    const chatMessages = newMessages.filter(msg => msg.from !== "system");
+    const lastMessage = chatMessages.length > 0 ? chatMessages[chatMessages.length - 1] : null;
+
+    console.log("🔥 마지막 메시지 업데이트:", {
+      roomUuid: selectedRoom.room_uuid,
+      lastMessage: lastMessage
+    });
+
+    onLastMessageChange(selectedRoom.room_uuid, lastMessage);
+  }, [selectedRoom?.room_uuid, onLastMessageChange]);
+
+  // 🔥 messages 상태가 변경될 때마다 마지막 메시지 정보 업데이트
+  useEffect(() => {
+    if (messages.length > 0) {
+      updateLastMessage(messages);
+    }
+  }, [messages, updateLastMessage]);
 
   // 디버깅 로그 추가
   console.log("=== Chat 컴포넌트 렌더링 ===");
@@ -47,13 +75,17 @@ export function Chat() {
 
         console.log(`✅ 채팅 메시지 ${formattedMessages.length}개 로딩 완료`);
         setMessages(formattedMessages);
+
+        // 🔥 여기서 updateLastMessage 호출 제거 (useEffect에서 처리)
       } else {
         console.log("ℹ️ 로딩할 메시지가 없음");
         setMessages([]);
+        // 🔥 빈 배열일 때도 updateLastMessage 호출 제거 (useEffect에서 처리)
       }
     } catch (error) {
       console.error("❌ 채팅 메시지 로딩 실패:", error);
       setMessages([]);
+      // 🔥 에러 시에도 updateLastMessage 호출 제거 (useEffect에서 처리)
     } finally {
       setIsLoadingMessages(false);
     }
@@ -93,6 +125,7 @@ export function Chat() {
       loadChatMessages(selectedRoom.room_uuid);
     }
   }, [selectedRoom?.room_uuid, loadChatMessages]);
+
 
   // WebSocket 연결 설정 - dependency 최소화
   const connectWebSocket = useCallback(() => {
@@ -155,6 +188,9 @@ export function Chat() {
 
             const updatedMessages = [...prev, newMessage];
             console.log("✅ 메시지 추가 완료 - 새 메시지 수:", updatedMessages.length);
+
+            // 🔥 여기서 updateLastMessage 호출 제거 (useEffect에서 처리)
+
             return updatedMessages;
           });
 
@@ -173,6 +209,8 @@ export function Chat() {
 
             console.log(`📚 WebSocket 히스토리 메시지 ${formattedMessages.length}개 설정`);
             setMessages(formattedMessages);
+
+            // 🔥 여기서 updateLastMessage 호출 제거 (useEffect에서 처리)
           }
 
         } else if (data.type === 'user_joined') {
@@ -183,7 +221,11 @@ export function Chat() {
           };
 
           console.log("👋 사용자 입장:", joinMessage);
-          setMessages((prev) => [...prev, joinMessage]);
+          setMessages((prev) => {
+            const updatedMessages = [...prev, joinMessage];
+            // 🔥 system 메시지는 마지막 메시지로 카운트하지 않음 (useEffect에서 자동 필터링)
+            return updatedMessages;
+          });
 
         } else if (data.type === 'user_left') {
           const leaveMessage: ChatMessage = {
@@ -193,7 +235,11 @@ export function Chat() {
           };
 
           console.log("👋 사용자 퇴장:", leaveMessage);
-          setMessages((prev) => [...prev, leaveMessage]);
+          setMessages((prev) => {
+            const updatedMessages = [...prev, leaveMessage];
+            // 🔥 system 메시지는 마지막 메시지로 카운트하지 않음 (useEffect에서 자동 필터링)
+            return updatedMessages;
+          });
         }
       } catch (error) {
         console.error("❌ WebSocket 메시지 파싱 오류:", error);
