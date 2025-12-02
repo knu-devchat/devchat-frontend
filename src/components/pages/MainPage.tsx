@@ -11,10 +11,8 @@ export default function MainPage() {
                 <NavigationMenuDemo />
             </div>
             <div className="w-full flex justify-between items-center mt-2 px-4">
-                <Link to="/">
-                    <Button>
-                        로고
-                    </Button>
+                <Link to="/" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors">
+                    DevChat
                 </Link>
                 <Link to="/login">
                     <Button>
