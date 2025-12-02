@@ -47,7 +47,7 @@ const data = {
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   userRooms?: any[];
   currentUser?: any;
-  roomLastMessages?: { [roomUuid: string]: any; }; // 🔥 마지막 메시지 정보 추가
+  roomLastMessages?: { [roomUuid: string]: any; };
 }
 
 export function AppSidebar({ userRooms, currentUser, roomLastMessages, ...props }: AppSidebarProps) {
@@ -72,7 +72,6 @@ export function AppSidebar({ userRooms, currentUser, roomLastMessages, ...props 
       const now = new Date();
       const messageTime = new Date(timestamp);
 
-      // 유효한 날짜인지 확인
       if (isNaN(messageTime.getTime())) {
         return "";
       }
@@ -83,7 +82,7 @@ export function AppSidebar({ userRooms, currentUser, roomLastMessages, ...props 
         return "방금 전";
       } else if (diffInMinutes < 60) {
         return `${diffInMinutes}분 전`;
-      } else if (diffInMinutes < 1440) { // 24시간
+      } else if (diffInMinutes < 1440) {
         const diffInHours = Math.floor(diffInMinutes / 60);
         return `${diffInHours}시간 전`;
       } else {
@@ -181,7 +180,6 @@ export function AppSidebar({ userRooms, currentUser, roomLastMessages, ...props 
   const handleRoomCreated = (newRoom: any) => {
     console.log("새로 생성된 방:", newRoom);
 
-    // 백엔드 응답 구조에 맞게 방 추가
     const formattedRoom = {
       room_uuid: newRoom.room_uuid,
       room_name: newRoom.room_name,
@@ -189,20 +187,17 @@ export function AppSidebar({ userRooms, currentUser, roomLastMessages, ...props 
       subject: "새로 생성된 방"
     };
 
-    setRooms([formattedRoom, ...rooms]); // 새 방을 맨 위에 추가
-    setActiveItem({ title: "방 목록" }); // 방 생성 후 방 목록으로 돌아가기
+    setRooms([formattedRoom, ...rooms]);
+    setActiveItem({ title: "방 목록" });
   };
 
   const handleRoomClick = async (room: any) => {
     try {
-      // 서버 세션에 선택된 방 저장
       await selectRoom(room.room_uuid);
-      // 선택된 방의 상세 정보를 받아와 로컬 상태를 갱신
       const res = await getCurrentRoom();
       if (res && res.room) {
         setSelectedRoom(res.room);
       } else {
-        // fallback: set minimal room info
         setSelectedRoom(room);
       }
     } catch (error) {
@@ -211,169 +206,125 @@ export function AppSidebar({ userRooms, currentUser, roomLastMessages, ...props 
   };
 
   return (
-    <Sidebar
-      collapsible="icon"
-      className="overflow-hidden *:data-[sidebar=sidebar]:flex-row"
-      {...props}
-    >
-      {/* This is the first sidebar */}
-      {/* We disable collapsible and adjust width to icon. */}
-      {/* This will make the sidebar appear as icons. */}
-      <Sidebar
-        collapsible="none"
-        className="w-[calc(var(--sidebar-width-icon)+1px)]! border-r"
-      >
-        <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
-                <a href="#" onClick={() => window.location.reload()}>
-                  <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                    <svg
-                      className="size-5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 12H12M12 12H16M12 12V8M12 12V16M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M8 8L16 16M16 8L8 16"
-                        stroke="currentColor"
-                        strokeWidth="1"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </div>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">DevChat</span>
-                    <span className="truncate text-xs">개발자 채팅</span>
-                  </div>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent className="px-1.5 md:px-0">
-              <SidebarMenu>
-                {data.navMain.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    {/* 💡 "방 생성"과 "방 입장" 항목만 Dialog로 감쌉니다. */}
-                    {item.title === "방 생성" ? (
-                      <div>
-                        <SidebarMenuButton
-                          tooltip={{
-                            children: item.title,
-                            hidden: false,
-                          }}
-                          onClick={() => {
-                            createRoomRef.current?.open();
-                            setActiveItem(item);
-                          }}
-                          isActive={activeItem?.title === item.title}
-                          className="px-2.5 md:px-2"
-                        >
-                          <item.icon />
-                          <span>{item.title}</span>
-                        </SidebarMenuButton>
-                        <CreateRoom ref={createRoomRef} onRoomCreated={handleRoomCreated} />
-                      </div>
-                    ) : item.title === "방 입장" ? (
-                      <div>
-                        <SidebarMenuButton
-                          tooltip={{
-                            children: item.title,
-                            hidden: false,
-                          }}
-                          onClick={() => {
-                            joinRoomRef.current?.open();
-                            setActiveItem(item);
-                          }}
-                          isActive={activeItem?.title === item.title}
-                          className="px-2.5 md:px-2"
-                        >
-                          <DoorOpen />
-                          <span>{item.title}</span>
-                        </SidebarMenuButton>
-                        <JoinRoom ref={joinRoomRef} />
-                      </div>
-                    ) : (
+    // 🔥 단일 사이드바로 변경, 반응형 제거
+    <Sidebar className="w-80 border-r" {...props}>
+      {/* 🔥 로고 섹션 */}
+      <SidebarHeader className="border-b p-4">
+        <div className="flex items-center gap-3">
+          <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-10 items-center justify-center rounded-lg">
+            <svg
+              className="size-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 12H12M12 12H16M12 12V8M12 12V16M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M8 8L16 16M16 8L8 16"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-bold text-lg cursor-pointer hover:text-primary transition-colors"
+              onClick={() => window.location.reload()}>
+              DevChat
+            </span>
+            <span className="text-xs text-muted-foreground">개발자 채팅</span>
+          </div>
+        </div>
+      </SidebarHeader>
+
+      {/* 🔥 메뉴 섹션 */}
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent className="px-4 py-2">
+            <SidebarMenu className="space-y-1">
+              {data.navMain.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  {item.title === "방 생성" ? (
+                    <div>
                       <SidebarMenuButton
-                        tooltip={{
-                          children: item.title,
-                          hidden: false,
+                        onClick={() => {
+                          createRoomRef.current?.open();
+                          setActiveItem(item);
                         }}
-                        // 일반 항목은 onClick을 유지하거나 라우팅 처리
-                        onClick={() => setActiveItem(item)}
                         isActive={activeItem?.title === item.title}
-                        className="px-2.5 md:px-2"
+                        className="w-full justify-start"
                       >
-                        <item.icon />
-                        <span>{item.title}</span>
+                        <item.icon className="h-4 w-4" />
+                        <span className="ml-2">{item.title}</span>
                       </SidebarMenuButton>
-                    )}
+                      <CreateRoom ref={createRoomRef} onRoomCreated={handleRoomCreated} />
+                    </div>
+                  ) : item.title === "방 입장" ? (
+                    <div>
+                      <SidebarMenuButton
+                        onClick={() => {
+                          joinRoomRef.current?.open();
+                          setActiveItem(item);
+                        }}
+                        isActive={activeItem?.title === item.title}
+                        className="w-full justify-start"
+                      >
+                        <DoorOpen className="h-4 w-4" />
+                        <span className="ml-2">{item.title}</span>
+                      </SidebarMenuButton>
+                      <JoinRoom ref={joinRoomRef} />
+                    </div>
+                  ) : (
+                    <SidebarMenuButton
+                      onClick={() => setActiveItem(item)}
+                      isActive={activeItem?.title === item.title}
+                      className="w-full justify-start"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span className="ml-2">{item.title}</span>
+                    </SidebarMenuButton>
+                  )}
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-        <SidebarFooter>
-          <NavUser user={currentUser} />
-        </SidebarFooter>
-      </Sidebar>
-
-      {/* This is the second sidebar */}
-      {/* We disable collapsible and let it fill remaining space */}
-      <Sidebar collapsible="none" className="hidden flex-1 md:flex">
-        <SidebarHeader className="gap-3.5 border-b p-4">
-          <div className="flex w-full items-center justify-between">
-            <div className="text-foreground text-base font-medium">
+        {/* 🔥 방 목록 섹션 */}
+        <SidebarGroup>
+          <div className="px-4 py-2 border-t">
+            <div className="text-sm font-medium text-muted-foreground mb-2">
               {activeItem?.title}
             </div>
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup className="px-0">
-            <SidebarGroupContent>
+            <div className="space-y-1">
               {rooms.length > 0 ? (
                 rooms.map((room) => (
-                  <a
-                    href="#"
+                  <div
                     key={room.room_uuid}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleRoomClick(room);
-                    }}
-                    className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight last:border-b-0 cursor-pointer"
+                    onClick={() => handleRoomClick(room)}
+                    className="p-3 rounded-md hover:bg-sidebar-accent cursor-pointer border border-transparent hover:border-sidebar-border transition-all"
                   >
-                    <div className="flex w-full items-center gap-2">
-                      <span className="font-medium truncate">
-                        {/* 🔥 방 이름 표시 */}
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium text-sm truncate flex-1">
                         {room.room_name}
                       </span>
-                      <span className="ml-auto text-xs text-muted-foreground whitespace-nowrap">
-                        {/* 🔥 마지막 메시지 시간 표시 (실시간 우선) */}
+                      <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
                         {formatTime(getLastMessageTime(room))}
                       </span>
                     </div>
-                    <div className="w-full text-xs text-muted-foreground truncate">
-                      {/* 🔥 발송자 이름 표시 (실시간 메시지 우선, 있는 경우만) */}
+                    <div className="text-xs text-muted-foreground truncate">
                       {getSenderName(room) && (
                         <span className="font-medium">{getSenderName(room)}: </span>
                       )}
-                      {/* 🔥 마지막 메시지 내용 표시 (실시간 우선) */}
                       {formatLastMessage(room)}
                     </div>
-                  </a>
+                  </div>
                 ))
               ) : (
                 <div className="p-4 text-center text-muted-foreground text-sm">
@@ -381,10 +332,15 @@ export function AppSidebar({ userRooms, currentUser, roomLastMessages, ...props 
                   새 방을 만들거나 방에 참여해보세요
                 </div>
               )}
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
+            </div>
+          </div>
+        </SidebarGroup>
+      </SidebarContent>
+
+      {/* 🔥 사용자 정보 섹션 */}
+      <SidebarFooter className="border-t p-4">
+        <NavUser user={currentUser} />
+      </SidebarFooter>
     </Sidebar>
   );
 }

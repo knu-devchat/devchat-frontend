@@ -147,6 +147,9 @@ export default function Dashboard() {
           "--sidebar-width": "350px",
         } as React.CSSProperties
       }
+      defaultOpen={true}
+      open={true}
+      onOpenChange={() => { }}
     >
       <AppSidebar userRooms={userRooms} currentUser={currentUser} roomLastMessages={roomLastMessages} />
 
