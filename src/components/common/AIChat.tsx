@@ -375,7 +375,7 @@ export function AIChat({ className }: AIChatProps) {
             <BotMessageSquare />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-96 h-[500px]" align="start">
+        <DropdownMenuContent className="w-270 h-300" align="start">
           <div className="flex flex-col h-full">
             {/* 헤더 */}
             <div className="px-4 py-2 text-sm text-muted-foreground border-b">
