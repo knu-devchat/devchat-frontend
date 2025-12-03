@@ -22,10 +22,25 @@ export function Chat({ onLastMessageChange }: ChatProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [isComposing, setIsComposing] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [animatingMessages, setAnimatingMessages] = useState<Set<string | number>>(new Set());
   const listRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const { selectedRoom, setSelectedRoom } = useRoom();
+
+  // 🎨 새 메시지 애니메이션 트리거
+  const triggerMessageAnimation = useCallback((messageId: string | number) => {
+    setAnimatingMessages(prev => new Set(prev).add(messageId));
+
+    // 애니메이션 완료 후 상태 정리 (테일윈드 애니메이션 시간에 맞춰 조정)
+    setTimeout(() => {
+      setAnimatingMessages(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(messageId);
+        return newSet;
+      });
+    }, 300); // 테일윈드 duration-300에 맞춤
+  }, []);
 
   // 🔥 마지막 메시지 정보를 상위로 전달하는 함수
   const updateLastMessage = useCallback((newMessages: ChatMessage[]) => {
@@ -75,6 +90,8 @@ export function Chat({ onLastMessageChange }: ChatProps) {
 
         console.log(`✅ 채팅 메시지 ${formattedMessages.length}개 로딩 완료`);
         setMessages(formattedMessages);
+        // 🎨 히스토리 로드 시 애니메이션 상태 초기화
+        setAnimatingMessages(new Set());
 
         // 🔥 여기서 updateLastMessage 호출 제거 (useEffect에서 처리)
       } else {
@@ -189,6 +206,9 @@ export function Chat({ onLastMessageChange }: ChatProps) {
             const updatedMessages = [...prev, newMessage];
             console.log("✅ 메시지 추가 완료 - 새 메시지 수:", updatedMessages.length);
 
+            // 🎨 새 메시지 애니메이션 트리거
+            triggerMessageAnimation(newMessage.id);
+
             // 🔥 여기서 updateLastMessage 호출 제거 (useEffect에서 처리)
 
             return updatedMessages;
@@ -223,6 +243,8 @@ export function Chat({ onLastMessageChange }: ChatProps) {
           console.log("👋 사용자 입장:", joinMessage);
           setMessages((prev) => {
             const updatedMessages = [...prev, joinMessage];
+            // 🎨 입장 메시지 애니메이션 트리거
+            triggerMessageAnimation(joinMessage.id);
             // 🔥 system 메시지는 마지막 메시지로 카운트하지 않음 (useEffect에서 자동 필터링)
             return updatedMessages;
           });
@@ -237,6 +259,8 @@ export function Chat({ onLastMessageChange }: ChatProps) {
           console.log("👋 사용자 퇴장:", leaveMessage);
           setMessages((prev) => {
             const updatedMessages = [...prev, leaveMessage];
+            // 🎨 퇴장 메시지 애니메이션 트리거
+            triggerMessageAnimation(leaveMessage.id);
             // 🔥 system 메시지는 마지막 메시지로 카운트하지 않음 (useEffect에서 자동 필터링)
             return updatedMessages;
           });
@@ -276,6 +300,7 @@ export function Chat({ onLastMessageChange }: ChatProps) {
       console.log("📞 WebSocket 연결 함수 호출");
       connectWebSocket();
       setMessages([]); // 새 방 입장 시 메시지 초기화
+      setAnimatingMessages(new Set()); // 🎨 애니메이션 상태도 초기화
     } else {
       console.log("⏳ room_uuid 없음, WebSocket 연결 안함");
       // WebSocket 정리
@@ -405,34 +430,41 @@ export function Chat({ onLastMessageChange }: ChatProps) {
           </div>
         ) : (
           /* ✅ 여기서 messages.map()으로 메시지들을 렌더링 */
-          messages.map((message) => (
-            <div key={message.id} className="message-item">
-              {message.from === "system" ? (
-                <div className="text-sm text-muted-foreground text-center py-2">
-                  {message.text}
-                </div>
-              ) : (
-                <div
-                  className={`max-w-[80%] wrap-break-word px-3 py-2 rounded-lg ${message.from === "me"
-                    ? "ml-auto bg-primary/10"
-                    : "mr-auto bg-muted/20"
-                    }`}
-                >
-                  {message.from === "remote" && message.username && (
-                    <div className="text-xs text-muted-foreground mb-1">
-                      {message.username}
-                    </div>
-                  )}
-                  <div>{message.text}</div>
-                  {message.timestamp && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {new Date(message.timestamp).toLocaleTimeString()}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))
+          messages.map((message) => {
+            const isAnimating = animatingMessages.has(message.id);
+            return (
+              <div
+                key={message.id}
+                className={`message-item transition-all duration-300 ease-out ${isAnimating ? 'animate-in slide-in-from-bottom-4 fade-in' : ''
+                  }`}
+              >
+                {message.from === "system" ? (
+                  <div className="text-sm text-muted-foreground text-center py-2">
+                    {message.text}
+                  </div>
+                ) : (
+                  <div
+                    className={`max-w-[80%] wrap-break-word px-3 py-2 rounded-lg ${message.from === "me"
+                      ? "ml-auto bg-primary/10"
+                      : "mr-auto bg-muted/20"
+                      }`}
+                  >
+                    {message.from === "remote" && message.username && (
+                      <div className="text-xs text-muted-foreground mb-1">
+                        {message.username}
+                      </div>
+                    )}
+                    <div>{message.text}</div>
+                    {message.timestamp && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {new Date(message.timestamp).toLocaleTimeString()}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
         <div ref={bottomRef} />
       </div>

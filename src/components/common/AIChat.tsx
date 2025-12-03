@@ -184,52 +184,46 @@ export function AIChat({ className }: AIChatProps) {
             setIsAIThinking(false);
           }
 
-        }
-        else if (data.type === 'chat_history') {
-          // 이전 대화 내역 메시지 처리 (개별 메시지)
-          const historyMessage: AIMessage = {
-            id: data.message_id || `history-${Date.now()}-${Math.random()}`,
+        } else if (data.type === 'ai_joined') {
+          // 🔥 AI 입장 메시지 처리
+          const joinMessage: AIMessage = {
+            id: `ai-join-${Date.now()}`,
             text: data.message,
-            from: data.is_ai ? "ai" : (data.is_self ? "me" : "system"),
-            username: data.username,
-            timestamp: data.timestamp,
+            from: "system",
+            timestamp: data.timestamp
           };
+          console.log("[AI_DEBUG] AI 입장 메시지:", joinMessage);
+          setMessages((prev) => [...prev, joinMessage]);
 
-          console.log("[AI_DEBUG] 히스토리 메시지 추가:", historyMessage);
-          setMessages((prev) => [...prev, historyMessage]);
-        }
-        else if (data.type === 'message_history') {
-          // 대화 히스토리 일괄 처리 (배열로 받는 경우)
-          if (data.messages && Array.isArray(data.messages)) {
-            const historyMessages: AIMessage[] = data.messages.map((msg: any) => ({
-              id: msg.id,
-              text: msg.content,
-              from: msg.is_ai ? "ai" : (msg.is_self ? "me" : "system"),
-              username: msg.username,
-              timestamp: msg.timestamp,
-            }));
+        } else if (data.type === 'ai_thinking') {
+          console.log("[AI_DEBUG] AI 응답 생성 중...");
+          setIsAIThinking(true);
 
-            console.log(`[AI_DEBUG] 히스토리 메시지 ${historyMessages.length}개 일괄 설정`);
-            setMessages(historyMessages);
-          }
-        }
-        else if (data.type === 'history_loaded') {
-          // 히스토리 로드 완료 알림
-          console.log(`[AI_DEBUG] ${data.message} (${data.count}개)`);
-
-          // 시스템 메시지로 표시하고 싶다면:
-          const systemMessage: AIMessage = {
-            id: `history-loaded-${Date.now()}`,
+        } else if (data.type === 'ai_error') {
+          console.log("[AI_ERROR] AI 오류:", data.message);
+          setIsAIThinking(false);
+          const errorMessage: AIMessage = {
+            id: `ai-error-${Date.now()}`,
             text: data.message,
             from: "system"
           };
-          setMessages((prev) => [...prev, systemMessage]);
+          setMessages((prev) => [...prev, errorMessage]);
+
+        } else if (data.type === 'error') {
+          // 🔥 백엔드 에러 메시지 처리
+          console.log("[AI_ERROR] 백엔드 에러:", data.message);
+          setIsAIThinking(false);
+          const errorMessage: AIMessage = {
+            id: `backend-error-${Date.now()}`,
+            text: data.message,
+            from: "system"
+          };
+          setMessages((prev) => [...prev, errorMessage]);
         }
       } catch (error) {
         console.error("[AI_ERROR] WebSocket 메시지 파싱 오류:", error);
       }
     };
-
 
     ws.onclose = (event) => {
       console.log(`[AI_DEBUG] AI WebSocket 연결 종료: ${sessionId}`, {
@@ -375,7 +369,7 @@ export function AIChat({ className }: AIChatProps) {
             <BotMessageSquare />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-270 h-300" align="start">
+        <DropdownMenuContent className="w-300 h-220" align="start">
           <div className="flex flex-col h-full">
             {/* 헤더 */}
             <div className="px-4 py-2 text-sm text-muted-foreground border-b">
@@ -463,12 +457,19 @@ export function AIChat({ className }: AIChatProps) {
                   }}
                   placeholder={
                     isConnected
-                      ? "AI에게 질문하기..."
+                      ? "AI에게 질문하기... (Enter: 전송, Shift+Enter: 줄바꿈)"
                       : "연결 중..."
                   }
                   className="min-h-[60px] resize-none"
                   disabled={!isConnected || isCreatingSession || isAIThinking}
                 />
+                <Button
+                  onClick={sendMessage}
+                  disabled={!isConnected || !text.trim() || isCreatingSession || isAIThinking}
+                  size="sm"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
               </div>
               <div className="text-xs text-muted-foreground mt-1">
                 {selectedRoom ? `${selectedRoom.room_name}에서 AI 채팅` : "방을 선택해주세요"}
@@ -477,6 +478,6 @@ export function AIChat({ className }: AIChatProps) {
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
-    </div >
+    </div>
   );
 }
