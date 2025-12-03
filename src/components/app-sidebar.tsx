@@ -238,7 +238,7 @@ export function AppSidebar({ userRooms, currentUser, roomLastMessages, ...props 
               onClick={() => window.location.reload()}>
               DevChat
             </span>
-            <span className="text-xs text-muted-foreground">개발자 채팅</span>
+            <span className="text-xs text-muted-foreground">개발자를 위한 AI 협업 플랫폼</span>
           </div>
         </div>
       </SidebarHeader>
