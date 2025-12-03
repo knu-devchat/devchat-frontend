@@ -63,10 +63,16 @@ export const JoinRoom = React.forwardRef<
 
           setTotp("");
           closeButtonRef.current?.click();
+        } else {
+          // 백엔드에서 실패 응답이 온 경우
+          setError(res.message || "방 입장에 실패했습니다.");
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setError(msg);
+
+        // 에러 메시지 처리 개선
+        let errorMessage = "잘못된 OTP입니다.";
+
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }

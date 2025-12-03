@@ -77,13 +77,8 @@ export const TotpDialog = React.forwardRef<
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button ref={closeButtonRef} variant="outline">취소</Button>
+            <Button ref={closeButtonRef} variant="outline">닫기</Button>
           </DialogClose>
-          <Button type="button" onClick={() => {
-            // 생성 버튼 동작: 토큰 검증/전송 로직은 서버 엔드포인트 준비 후 연결
-            // TODO: 서버 엔드포인트가 준비되면 sendChatMessage 등의 함수를 호출
-            closeButtonRef.current?.click();
-          }}>새로생성</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
