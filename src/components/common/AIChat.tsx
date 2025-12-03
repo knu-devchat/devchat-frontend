@@ -30,11 +30,26 @@ export function AIChat({ className }: AIChatProps) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [animatingMessages, setAnimatingMessages] = useState<Set<string | number>>(new Set());
 
   const listRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const { selectedRoom } = useRoom();
+
+  // 🎨 새 메시지 애니메이션 트리거
+  const triggerMessageAnimation = useCallback((messageId: string | number) => {
+    setAnimatingMessages(prev => new Set(prev).add(messageId));
+
+    // 애니메이션 완료 후 상태 정리
+    setTimeout(() => {
+      setAnimatingMessages(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(messageId);
+        return newSet;
+      });
+    }, 300); // 테일윈드 duration-300에 맞춤
+  }, []);
 
   // AI 세션 목록 조회 및 기존 세션 찾기
   const findExistingSession = useCallback(async () => {
@@ -168,16 +183,26 @@ export function AIChat({ className }: AIChatProps) {
             timestamp: data.timestamp,
           };
 
-          console.log("[AI_DEBUG] 새 메시지 추가:", newMessage);
+          console.log("[AI_DEBUG] 메시지 추가:", newMessage);
 
           setMessages((prev) => {
-            const existingMessage = prev.find(msg => msg.id === newMessage.id);
-            if (existingMessage) {
-              console.log("[AI_DEBUG] 중복 메시지 무시:", newMessage.id);
+            // 🔥 중복 메시지 체크 (같은 내용과 시간이면 중복으로 간주)
+            const isDuplicate = prev.some(msg =>
+              msg.text === newMessage.text &&
+              msg.from === newMessage.from &&
+              Math.abs(new Date(msg.timestamp || 0).getTime() - new Date(newMessage.timestamp || 0).getTime()) < 5000 // 5초 이내
+            );
+
+            if (isDuplicate) {
+              console.log("[AI_DEBUG] 중복 메시지 무시:", newMessage);
               return prev;
             }
+
             return [...prev, newMessage];
           });
+
+          // 🎨 메시지 애니메이션 트리거
+          triggerMessageAnimation(newMessage.id);
 
           // AI 응답 완료 시 thinking 상태 해제
           if (data.is_ai) {
@@ -194,6 +219,8 @@ export function AIChat({ className }: AIChatProps) {
           };
           console.log("[AI_DEBUG] AI 입장 메시지:", joinMessage);
           setMessages((prev) => [...prev, joinMessage]);
+          // 🎨 AI 입장 메시지 애니메이션 트리거
+          triggerMessageAnimation(joinMessage.id);
 
         } else if (data.type === 'ai_thinking') {
           console.log("[AI_DEBUG] AI 응답 생성 중...");
@@ -327,13 +354,25 @@ export function AIChat({ className }: AIChatProps) {
     const userText = text.trim();
     console.log("[AI_DEBUG] AI 메시지 전송 시도:", userText);
 
+    // 🔥 사용자 메시지를 즉시 UI에 추가
+    const userMessage: AIMessage = {
+      id: `user-${Date.now()}-${Math.random()}`,
+      text: userText,
+      from: "me",
+      timestamp: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    // 🎨 사용자 메시지 애니메이션 트리거
+    triggerMessageAnimation(userMessage.id);
+    setText(""); // 전송 후 입력창 즉시 초기화
+
     try {
       wsRef.current.send(JSON.stringify({
         type: 'chat_message',
         message: userText,
       }));
       console.log("[AI_DEBUG] AI 메시지 전송 완료");
-      setText(""); // 전송 후 입력창 초기화
     } catch (error) {
       console.error("[AI_ERROR] AI 메시지 전송 오류:", error);
       setMessages((prev) => [...prev, {
@@ -358,6 +397,7 @@ export function AIChat({ className }: AIChatProps) {
       // 🔥 세션과 메시지는 초기화 (새로운 대화로 시작)
       setSessionId(null);
       setMessages([]);
+      setAnimatingMessages(new Set()); // 🎨 애니메이션 상태도 초기화
     }
   };
 
@@ -369,7 +409,7 @@ export function AIChat({ className }: AIChatProps) {
             <BotMessageSquare />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-300 h-220" align="start">
+        <DropdownMenuContent className="w-320 h-220" align="start">
           <div className="flex flex-col h-full">
             {/* 헤더 */}
             <div className="px-4 py-2 text-sm text-muted-foreground border-b">
@@ -393,35 +433,42 @@ export function AIChat({ className }: AIChatProps) {
                   개발 관련 질문을 자유롭게 해주세요.
                 </div>
               ) : (
-                messages.map((m) => (
-                  <div key={m.id}>
-                    {m.from === "system" ? (
-                      <div className="text-sm text-muted-foreground text-center py-2">
-                        {m.text}
-                      </div>
-                    ) : (
-                      <div
-                        className={`max-w-[90%] wrap-break-word px-3 py-2 rounded-lg ${m.from === "me"
-                          ? "ml-auto bg-primary text-primary-foreground"
-                          : "mr-auto bg-muted"
-                          }`}
-                      >
-                        {m.from === "ai" && (
-                          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                            <BotMessageSquare className="w-3 h-3" />
-                            AI Assistant
-                          </div>
-                        )}
-                        <div className="whitespace-pre-wrap">{m.text}</div>
-                        {m.timestamp && (
-                          <div className="text-xs opacity-70 mt-1">
-                            {new Date(m.timestamp).toLocaleTimeString()}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))
+                messages.map((m) => {
+                  const isAnimating = animatingMessages.has(m.id);
+                  return (
+                    <div
+                      key={m.id}
+                      className={`transition-all duration-300 ease-out ${isAnimating ? 'animate-in slide-in-from-bottom-4 fade-in' : ''
+                        }`}
+                    >
+                      {m.from === "system" ? (
+                        <div className="text-sm text-muted-foreground text-center py-2">
+                          {m.text}
+                        </div>
+                      ) : (
+                        <div
+                          className={`max-w-[90%] wrap-break-word px-3 py-2 rounded-lg ${m.from === "me"
+                            ? "ml-auto bg-primary text-primary-foreground"
+                            : "mr-auto bg-muted"
+                            }`}
+                        >
+                          {m.from === "ai" && (
+                            <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                              <BotMessageSquare className="w-3 h-3" />
+                              AI Assistant
+                            </div>
+                          )}
+                          <div className="whitespace-pre-wrap">{m.text}</div>
+                          {m.timestamp && (
+                            <div className="text-xs opacity-70 mt-1">
+                              {new Date(m.timestamp).toLocaleTimeString()}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
 
               {/* AI 응답 생성 중 표시 */}
