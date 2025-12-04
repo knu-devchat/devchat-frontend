@@ -409,7 +409,7 @@ export function AIChat({ className }: AIChatProps) {
             <BotMessageSquare />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-320 h-220" align="start">
+        <DropdownMenuContent className="w-180 h-220" align="start">
           <div className="flex flex-col h-full">
             {/* 헤더 */}
             <div className="px-4 py-2 text-sm text-muted-foreground border-b">
@@ -504,7 +504,7 @@ export function AIChat({ className }: AIChatProps) {
                   }}
                   placeholder={
                     isConnected
-                      ? "AI에게 질문하기... (Enter: 전송, Shift+Enter: 줄바꿈)"
+                      ? "AI에게 질문하기..."
                       : "연결 중..."
                   }
                   className="min-h-[60px] resize-none"

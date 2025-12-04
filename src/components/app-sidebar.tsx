@@ -64,6 +64,21 @@ export function AppSidebar({ userRooms, currentUser, roomLastMessages, ...props 
     }
   }, [userRooms]);
 
+  // 🔥 방 입장 후 콜백 함수
+  const handleRoomJoined = React.useCallback((joinedRoom: any) => {
+    console.log("🎉 방 입장 완료, 방 목록에 추가:", joinedRoom);
+
+    // 방 목록에 새로운 방 추가 (중복 방지)
+    setRooms(prevRooms => {
+      const existingRoom = prevRooms.find(room => room.room_uuid === joinedRoom.room_uuid);
+      if (existingRoom) {
+        console.log("이미 목록에 있는 방:", joinedRoom.room_uuid);
+        return prevRooms;
+      }
+      return [...prevRooms, joinedRoom];
+    });
+  }, []);
+
   // 🔥 시간 포맷팅 함수
   const formatTime = (timestamp: string) => {
     if (!timestamp) return "";
@@ -278,7 +293,10 @@ export function AppSidebar({ userRooms, currentUser, roomLastMessages, ...props 
                         <DoorOpen className="h-4 w-4" />
                         <span className="ml-2">{item.title}</span>
                       </SidebarMenuButton>
-                      <JoinRoom ref={joinRoomRef} />
+                      <JoinRoom
+                        ref={joinRoomRef}
+                        onRoomJoined={handleRoomJoined}
+                      />
                     </div>
                   ) : (
                     <SidebarMenuButton
